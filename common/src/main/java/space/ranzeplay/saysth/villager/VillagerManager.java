@@ -14,7 +14,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.HashMap;
-import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
 
@@ -36,33 +35,23 @@ public class VillagerManager {
         return new VillagerMemory(villager.getUUID(), newName, newPersonality, villager.getVillagerData().getProfession().name(), new HashMap<>());
     }
 
-    public Optional<VillagerMemory> addNewVillager(Villager villager, boolean resetIfExists) {
-        final var memory = generateRandomVillagerMemory(villager);
-
-        if (!resetIfExists && villagers.containsKey(villager.getUUID())) {
-            return Optional.empty();
-        }
-
-        if (resetIfExists) {
-            villagers.remove(villager.getUUID());
-        }
-        villagers.put(villager.getUUID(), memory);
-
-        try {
+    public VillagerMemory getVillager(Villager villager) throws IOException {
+        final VillagerMemory memory;
+        if(!villagers.containsKey(villager.getUUID())) {
+            memory = generateRandomVillagerMemory(villager);
+            villagers.put(villager.getUUID(), memory);
             Main.CONFIG_MANAGER.setVillagers(villagers);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } else {
+            memory = villagers.get(villager.getUUID());
         }
 
-        return Optional.of(memory);
+        return memory;
     }
 
-    public VillagerMemory getById(UUID uuid) {
-        return villagers.get(uuid);
-    }
+    public void updateVillager(VillagerMemory memory) throws IOException {
+        villagers.replace(memory.getId(), memory);
 
-    public boolean isVillagerConfigured(UUID uuid) {
-        return villagers.containsKey(uuid);
+        Main.CONFIG_MANAGER.setVillagers(villagers);
     }
 
     public String sendMessageToVillager(UUID villagerId, UUID playerId, String message) throws IOException, InterruptedException {
@@ -88,6 +77,8 @@ public class VillagerManager {
         var text = new Gson().fromJson(response.body(), Llama3Response.class).getResult().getResponse();
         conversation.addMessage(new Message(ChatRole.ASSISTANT, text));
         memory.updateConversation(playerId, conversation);
+
+        this.updateVillager(memory);
 
         return text;
     }
