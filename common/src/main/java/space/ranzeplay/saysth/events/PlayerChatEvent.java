@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.List;
 
 public class PlayerChatEvent {
-    public static void onPlayerChat(ServerPlayer player, String message) throws IOException, InterruptedException {
+    public static void onPlayerChat(ServerPlayer player, String message) throws IOException {
         if (!message.startsWith("$")) return;
 
         final var nearbyVillagers = getNearbyVillagers(player);
@@ -33,7 +33,8 @@ public class PlayerChatEvent {
     }
 
     private static List<Villager> getNearbyVillagers(ServerPlayer player) {
-        final var position = player.getEyePosition();
+        final var look = player.getLookAngle();
+        final var position = player.getEyePosition().add(look.scale(10));
         final var posA = position.add(-10, -10, -10);
         final var posB = position.add(10, 10, 10);
         return player.getCommandSenderWorld().getEntitiesOfClass(Villager.class, new AABB(posA, posB));
