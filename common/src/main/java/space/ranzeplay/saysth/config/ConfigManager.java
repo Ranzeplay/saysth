@@ -4,11 +4,10 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import lombok.Getter;
 import space.ranzeplay.saysth.Main;
-import space.ranzeplay.saysth.VillagerMemory;
+import space.ranzeplay.saysth.villager.VillagerMemory;
 
 import java.io.*;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
 

@@ -1,4 +1,4 @@
-package space.ranzeplay.saysth;
+package space.ranzeplay.saysth.villager;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,5 +14,6 @@ import java.util.UUID;
 public class VillagerMemory {
     UUID id;
     String name;
+    String personality;
     HashMap<String, Conversation> conversations;
 }
