@@ -11,27 +11,25 @@ import java.util.List;
 
 public class PlayerChatEvent {
     public static void onPlayerChat(ServerPlayer player, String message) throws IOException, InterruptedException {
-        if(!message.startsWith("$")) return;
+        if (!message.startsWith("$")) return;
 
         final var nearbyVillagers = getNearbyVillagers(player);
 
-        var configuredVillagers = Main.CONFIG_MANAGER.getVillagers();
         Main.LOGGER.info("Found {} villagers.", nearbyVillagers.size());
         for (final var villager : nearbyVillagers) {
-            if(!Main.VILLAGER_MANAGER.isVillagerConfigured(villager.getUUID())) {
-                final var optionalMemory = Main.VILLAGER_MANAGER.addNewVillager(villager, false);
-                if(optionalMemory.isPresent()) {
-                    final var memory = optionalMemory.get();
-                    player.sendSystemMessage(Component.literal("Found new villager called " + memory.getName()));
-                    villager.setCustomName(Component.literal(memory.getName()));
+            final var memory = Main.VILLAGER_MANAGER.getVillager(villager);
+            villager.setCustomName(Component.literal(memory.getName()));
 
-                    final var response = Main.VILLAGER_MANAGER.sendMessageToVillager(memory.getId(), player.getUUID(), message);
-                    player.sendSystemMessage(Component.literal(String.format("<(Villager) %s> %s", villager.getCustomName(), response)));
+            new Thread(() -> {
+                final String response;
+                try {
+                    response = Main.VILLAGER_MANAGER.sendMessageToVillager(memory.getId(), player.getUUID(), message);
+                } catch (IOException | InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
-            }
+                player.sendSystemMessage(Component.literal(String.format("<(Villager) %s> %s", memory.getName(), response)));
+            }).start();
         }
-
-        Main.CONFIG_MANAGER.setVillagers(configuredVillagers);
     }
 
     private static List<Villager> getNearbyVillagers(ServerPlayer player) {
