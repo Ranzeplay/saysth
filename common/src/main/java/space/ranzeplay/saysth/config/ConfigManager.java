@@ -8,15 +8,12 @@ import space.ranzeplay.saysth.villager.VillagerMemory;
 
 import java.io.*;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.UUID;
 
 public class ConfigManager {
     private final Path configDirectoryPath;
     @Getter
     private SaySthConfig config;
-    @Getter
-    private HashMap<UUID, VillagerMemory> villagers;
 
     public ConfigManager(Path configDirectoryPath) {
         this.configDirectoryPath = configDirectoryPath;
@@ -27,7 +24,7 @@ public class ConfigManager {
     }
 
     private Path getVillagerMemoryPath() {
-        return configDirectoryPath.resolve("saysth-villagers.json");
+        return configDirectoryPath.resolve("saysth-villagers");
     }
 
     public void createConfigIfNotExists() throws IOException {
@@ -50,16 +47,8 @@ public class ConfigManager {
         }
 
         if(!getVillagerMemoryPath().toFile().exists()) {
-            Main.LOGGER.info("Creating villager memory file");
-            getVillagerMemoryPath().toFile().createNewFile();
-
-            var defaultConfig = new HashMap<Integer, VillagerMemory>();
-            var gson = new GsonBuilder().setPrettyPrinting().create();
-            gson.toJson(defaultConfig, defaultConfig.getClass());
-
-            final var writer = new FileWriter(getVillagerMemoryPath().toFile());
-            writer.write(gson.toJson(defaultConfig));
-            writer.close();
+            Main.LOGGER.info("Creating villager memory directory");
+            getVillagerMemoryPath().toFile().mkdirs();
         }
     }
 
@@ -72,23 +61,29 @@ public class ConfigManager {
         this.config = config;
     }
 
-    public void loadVillagers() throws IOException {
-        Main.LOGGER.info("Loading villagers");
-        final var reader = new FileReader(getVillagerMemoryPath().toFile());
+    public VillagerMemory getVillager(UUID uuid) throws IOException {
+        final var filePath = getVillagerMemoryPath().resolve(uuid.toString() + ".json").toFile();
+        if(!filePath.exists()) {
+            filePath.createNewFile();
+        }
+
+        final var reader = new FileReader(filePath);
         final var gson = new Gson();
-        final var villagers = gson.fromJson(reader, HashMap.class);
+        final var config = gson.fromJson(reader, VillagerMemory.class);
         reader.close();
-        this.villagers = villagers;
+
+        return config;
     }
 
-    public void setVillagers(HashMap<UUID, VillagerMemory> villagers) throws IOException {
-        this.villagers = villagers;
-
+    public void updateVillager(VillagerMemory villager) throws IOException {
+        final var targetFile = getVillagerMemoryPath().resolve(villager.getId().toString() + ".json").toFile();
+        final var writer = new FileWriter(targetFile);
         var gson = new GsonBuilder().setPrettyPrinting().create();
-        gson.toJson(villagers, villagers.getClass());
-
-        final var writer = new FileWriter(getVillagerMemoryPath().toFile());
-        writer.write(gson.toJson(villagers));
+        writer.write(gson.toJson(villager));
         writer.close();
+    }
+
+    public boolean isVillagerFileExists(UUID uuid) {
+        return getVillagerMemoryPath().resolve(uuid.toString() + ".json").toFile().exists();
     }
 }

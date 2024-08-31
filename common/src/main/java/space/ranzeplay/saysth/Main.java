@@ -19,10 +19,9 @@ public final class Main {
         try {
             CONFIG_MANAGER.createConfigIfNotExists();
             CONFIG_MANAGER.loadConfig();
-            CONFIG_MANAGER.loadVillagers();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        VILLAGER_MANAGER = new VillagerManager(CONFIG_MANAGER);
+        VILLAGER_MANAGER = new VillagerManager();
     }
 }
