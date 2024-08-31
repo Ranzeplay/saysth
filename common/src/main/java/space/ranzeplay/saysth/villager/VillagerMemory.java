@@ -19,6 +19,7 @@ public class VillagerMemory {
     String name;
     String personality;
     String profession;
+    String livingIn;
     HashMap<UUID, Conversation> conversations;
 
     public void addConversation(UUID playerId) {
@@ -30,12 +31,13 @@ public class VillagerMemory {
                         You are going to play a Minecraft villager whose name is %s.
                         You are a %s guy.
                         Your profession is %s.
+                        You live in %s
                         You use emeralds as currency.
                         You will response "IGN" but nothing else even a single character if user speaks to someone other than you.
                         You should speak concisely since you cannot speak too much at once.
                         You tend to know the other's name first when conversation starts.
                         """,
-                this.name, this.personality, this.profession);
+                this.name, this.personality, this.profession, this.livingIn);
     }
 
     public Conversation getConversation(UUID playerId) {

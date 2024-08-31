@@ -1,5 +1,8 @@
 package space.ranzeplay.saysth;
 
+import com.github.pemistahl.lingua.api.Language;
+import com.github.pemistahl.lingua.api.LanguageDetector;
+import com.github.pemistahl.lingua.api.LanguageDetectorBuilder;
 import org.slf4j.Logger;
 import space.ranzeplay.saysth.config.ConfigManager;
 import space.ranzeplay.saysth.villager.VillagerManager;
@@ -13,6 +16,8 @@ public final class Main {
     public static VillagerManager VILLAGER_MANAGER;
     public static Logger LOGGER;
 
+    public static LanguageDetector LANGUAGE_DETECTOR;
+
     public static void init(Path configDir, Logger logger){
         CONFIG_MANAGER = new ConfigManager(configDir);
         LOGGER = logger;
@@ -23,5 +28,7 @@ public final class Main {
             throw new RuntimeException(e);
         }
         VILLAGER_MANAGER = new VillagerManager();
+
+        LANGUAGE_DETECTOR = LanguageDetectorBuilder.fromLanguages(Language.CHINESE, Language.ENGLISH, Language.JAPANESE).build();
     }
 }

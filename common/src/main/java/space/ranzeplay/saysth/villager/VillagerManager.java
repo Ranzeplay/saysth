@@ -25,12 +25,17 @@ public class VillagerManager {
         final var newName = nameCandidates[random.nextInt(0, nameCandidates.length)];
         final var newPersonality = personalityCandidates[random.nextInt(0, personalityCandidates.length)];
 
-        return new VillagerMemory(villager.getUUID(), newName, newPersonality, villager.getVillagerData().getProfession().name(), new HashMap<>());
+        return new VillagerMemory(villager.getUUID(),
+                newName,
+                newPersonality,
+                villager.getVillagerData().getProfession().name(),
+                villager.getVillagerData().getType().toString(),
+                new HashMap<>());
     }
 
     public VillagerMemory getVillager(Villager villager) throws IOException {
         final VillagerMemory memory;
-        if(!Main.CONFIG_MANAGER.isVillagerFileExists(villager.getUUID())) {
+        if (!Main.CONFIG_MANAGER.isVillagerFileExists(villager.getUUID())) {
             memory = generateRandomVillagerMemory(villager);
             Main.CONFIG_MANAGER.updateVillager(memory);
         } else {
@@ -46,7 +51,7 @@ public class VillagerManager {
 
     public String sendMessageToVillager(UUID villagerId, UUID playerId, String message) throws IOException, InterruptedException {
         final var memory = Main.CONFIG_MANAGER.getVillager(villagerId);
-        if(!memory.conversations.containsKey(playerId)) {
+        if (!memory.conversations.containsKey(playerId)) {
             memory.addConversation(playerId);
         }
         final var conversation = memory.getConversation(playerId);
