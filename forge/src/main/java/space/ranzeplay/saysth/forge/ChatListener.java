@@ -11,7 +11,7 @@ import java.io.IOException;
 @Mod.EventBusSubscriber(modid = Main.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ChatListener {
     @SubscribeEvent
-    public static void onPlayerChat(final ServerChatEvent event) throws IOException {
+    public static void onPlayerChat(final ServerChatEvent event) throws IOException, InterruptedException {
         MainForge.LOGGER.info("Player chat");
         PlayerChatEvent.onPlayerChat(event.getPlayer(), event.getMessage().getString());
     }
