@@ -1,6 +1,7 @@
 package space.ranzeplay.saysth.fabric;
 
 import com.mojang.logging.LogUtils;
+import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import org.slf4j.Logger;
 import space.ranzeplay.saysth.Main;
@@ -11,12 +12,9 @@ public final class MainFabric implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        // This code runs as soon as Minecraft is in a mod-load-ready state.
-        // However, some things (like resources) may still be uninitialized.
-        // Proceed with mild caution.
-
-        // Run our common setup.
         final var configDir = FabricLoader.getInstance().getConfigDir();
         Main.init(configDir, LOGGER);
+
+        ServerMessageEvents.CHAT_MESSAGE.register(new ChatMessageListener());
     }
 }
