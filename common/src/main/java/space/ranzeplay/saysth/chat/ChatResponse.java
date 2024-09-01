@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public class Llama3Response {
+public class ChatResponse {
     @AllArgsConstructor
     @Getter
     public static class Result {

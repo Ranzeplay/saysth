@@ -37,10 +37,6 @@ dependencies {
 
     common(project(path: ':common', configuration: 'namedElements')) { transitive false }
     shadowBundle project(path: ':common', configuration: 'transformProductionForge')
-
-    implementation 'com.github.pemistahl:lingua:1.2.2'
-    forgeRuntimeLibrary 'com.github.pemistahl:lingua:1.2.2'
-    include 'com.github.pemistahl:lingua:1.2.2'
 }
 
 processResources {

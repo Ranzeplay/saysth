@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import net.minecraft.world.entity.npc.Villager;
 import space.ranzeplay.saysth.Main;
 import space.ranzeplay.saysth.chat.ChatRole;
-import space.ranzeplay.saysth.chat.Llama3Response;
+import space.ranzeplay.saysth.chat.ChatResponse;
 import space.ranzeplay.saysth.chat.Message;
 
 import java.io.IOException;
@@ -61,7 +61,7 @@ public class VillagerManager {
         Main.LOGGER.info(bodyText);
 
         // Send web request
-        var request = HttpRequest.newBuilder(URI.create("https://api.cloudflare.com/client/v4/accounts/" + Main.CONFIG_MANAGER.getConfig().getCloudflareUserId() + "/ai/run/@cf/meta/llama-3-8b-instruct"))
+        var request = HttpRequest.newBuilder(URI.create("https://api.cloudflare.com/client/v4/accounts/" + Main.CONFIG_MANAGER.getConfig().getCloudflareUserId() + "/ai/run/@cf/qwen/qwen1.5-14b-chat-awq"))
                 .POST(HttpRequest.BodyPublishers.ofString(bodyText))
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/json")
@@ -69,7 +69,7 @@ public class VillagerManager {
                 .build();
         var response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
 
-        var text = new Gson().fromJson(response.body(), Llama3Response.class).getResult().getResponse();
+        var text = new Gson().fromJson(response.body(), ChatResponse.class).getResult().getResponse();
         conversation.addMessage(new Message(ChatRole.ASSISTANT, text));
         memory.updateConversation(playerId, conversation);
 
