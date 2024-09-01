@@ -73,9 +73,9 @@ public class PlayerChatEvent {
 
     private static List<Villager> getNearbyVillagers(ServerPlayer player) {
         final var look = player.getLookAngle();
-        final var position = player.getEyePosition().add(look.scale(8));
-        final var posA = position.add(-10, -10, -10);
-        final var posB = position.add(10, 10, 10);
+        final var position = player.getEyePosition().add(look.scale(4));
+        final var posA = position.add(-5, -5, -5);
+        final var posB = position.add(5, 5, 5);
         return player.getCommandSenderWorld().getEntitiesOfClass(Villager.class, new AABB(posA, posB));
     }
 }
