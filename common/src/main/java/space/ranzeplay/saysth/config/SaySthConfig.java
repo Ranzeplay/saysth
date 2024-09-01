@@ -6,13 +6,13 @@ import lombok.Getter;
 public class SaySthConfig {
     public SaySthConfig() {
         cloudflareApiKey = "";
-        cloudflareUserId = "";
+        cloudflareAccountId = "";
         personalities = new String[]{};
         nameCandidates = new String[]{};
     }
 
     String cloudflareApiKey;
-    String cloudflareUserId;
+    String cloudflareAccountId;
     String[] personalities;
     String[] nameCandidates;
 }

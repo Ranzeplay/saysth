@@ -61,7 +61,7 @@ public class VillagerManager {
         Main.LOGGER.info(bodyText);
 
         // Send web request
-        var request = HttpRequest.newBuilder(URI.create("https://api.cloudflare.com/client/v4/accounts/" + Main.CONFIG_MANAGER.getConfig().getCloudflareUserId() + "/ai/run/@cf/qwen/qwen1.5-14b-chat-awq"))
+        var request = HttpRequest.newBuilder(URI.create("https://api.cloudflare.com/client/v4/accounts/" + Main.CONFIG_MANAGER.getConfig().getCloudflareAccountId() + "/ai/run/@cf/qwen/qwen1.5-14b-chat-awq"))
                 .POST(HttpRequest.BodyPublishers.ofString(bodyText))
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/json")
