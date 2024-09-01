@@ -15,6 +15,6 @@ public final class MainFabric implements ModInitializer {
         final var configDir = FabricLoader.getInstance().getConfigDir();
         Main.init(configDir, LOGGER);
 
-        ServerMessageEvents.CHAT_MESSAGE.register(new ChatMessageListener());
+        ServerMessageEvents.CHAT_MESSAGE.register(new ChatListener());
     }
 }

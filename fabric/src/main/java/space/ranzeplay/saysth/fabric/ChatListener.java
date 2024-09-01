@@ -8,7 +8,7 @@ import space.ranzeplay.saysth.events.PlayerChatEvent;
 
 import java.io.IOException;
 
-public class ChatMessageListener implements ServerMessageEvents.ChatMessage {
+public class ChatListener implements ServerMessageEvents.ChatMessage {
     @Override
     public void onChatMessage(PlayerChatMessage playerChatMessage, ServerPlayer serverPlayer, ChatType.Bound bound) {
         try {

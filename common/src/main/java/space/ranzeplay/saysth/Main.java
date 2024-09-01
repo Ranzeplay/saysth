@@ -12,21 +12,24 @@ import java.nio.file.Path;
 
 public final class Main {
     public static final String MOD_ID = "saysth";
+
     public static ConfigManager CONFIG_MANAGER;
     public static VillagerManager VILLAGER_MANAGER;
-    public static Logger LOGGER;
-
     public static LanguageDetector LANGUAGE_DETECTOR;
 
+    public static Logger LOGGER;
+
     public static void init(Path configDir, Logger logger){
-        CONFIG_MANAGER = new ConfigManager(configDir);
         LOGGER = logger;
+
+        CONFIG_MANAGER = new ConfigManager(configDir);
         try {
             CONFIG_MANAGER.createConfigIfNotExists();
             CONFIG_MANAGER.loadConfig();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
         VILLAGER_MANAGER = new VillagerManager();
 
         LANGUAGE_DETECTOR = LanguageDetectorBuilder.fromLanguages(Language.CHINESE, Language.ENGLISH, Language.JAPANESE).build();
