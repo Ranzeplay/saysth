@@ -9,7 +9,7 @@ public class SaySthConfig {
         cloudflareAccountId = "";
         personalities = new String[]{};
         nameCandidates = new String[]{};
-        modelName = "";
+        modelName = "@cf/qwen/qwen1.5-14b-chat-awq";
         conclusionMessageLimit = 10;
     }
 
