@@ -3,10 +3,12 @@ package space.ranzeplay.saysth.villager;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import space.ranzeplay.saysth.Main;
 import space.ranzeplay.saysth.chat.ChatRole;
 import space.ranzeplay.saysth.chat.Conversation;
 import space.ranzeplay.saysth.chat.Message;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
@@ -27,17 +29,15 @@ public class VillagerMemory {
     }
 
     public String getCharacter() {
-        return String.format("""
-                        You are going to play a Minecraft villager whose name is %s.
-                        You are a %s guy.
-                        Your profession is %s.
-                        You live in %s
-                        You use emeralds as currency.
-                        You will response "IGN" but nothing else even a single character if user speaks to someone other than you.
-                        You should speak concisely since you cannot speak too much at once.
-                        You tend to know the other's name first when conversation starts.
-                        """,
-                this.name, this.personality, this.profession, this.livingIn);
+        try {
+            return Main.CONFIG_MANAGER.getSystemMessageTemplate()
+                    .replace("{name}", name)
+                    .replace("{personality}", personality)
+                    .replace("{profession}", profession)
+                    .replace("{livingIn}", livingIn);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public Conversation getConversation(UUID playerId) {
