@@ -32,9 +32,9 @@ public class VillagerMemory {
         try {
             return Main.CONFIG_MANAGER.getSystemMessageTemplate()
                     .replace("{name}", name)
-                    .replace("{personality}", personality)
-                    .replace("{profession}", profession)
-                    .replace("{livingIn}", livingIn);
+                    .replace("{personality}", personality.toLowerCase())
+                    .replace("{profession}", profession.toLowerCase())
+                    .replace("{livingIn}", livingIn.toLowerCase());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
