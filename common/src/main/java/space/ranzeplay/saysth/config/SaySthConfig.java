@@ -9,10 +9,14 @@ public class SaySthConfig {
         cloudflareAccountId = "";
         personalities = new String[]{};
         nameCandidates = new String[]{};
+        modelName = "";
+        conclusionMessageLimit = 10;
     }
 
     String cloudflareApiKey;
     String cloudflareAccountId;
     String[] personalities;
     String[] nameCandidates;
+    String modelName;
+    int conclusionMessageLimit;
 }
