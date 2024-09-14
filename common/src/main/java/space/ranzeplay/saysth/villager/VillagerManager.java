@@ -3,8 +3,8 @@ package space.ranzeplay.saysth.villager;
 import com.google.gson.Gson;
 import net.minecraft.world.entity.npc.Villager;
 import space.ranzeplay.saysth.Main;
-import space.ranzeplay.saysth.chat.ChatRole;
 import space.ranzeplay.saysth.chat.ChatResponse;
+import space.ranzeplay.saysth.chat.ChatRole;
 import space.ranzeplay.saysth.chat.Conversation;
 import space.ranzeplay.saysth.chat.Message;
 
@@ -13,10 +13,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 
 public class VillagerManager {
     private static final String LLM_CONCLUDE_PROMPT = "I'll give you a json text containing a conversation, you need to conclude the content into a complete paragraph concisely using English.";
@@ -26,7 +23,13 @@ public class VillagerManager {
         final var nameCandidates = Main.CONFIG_MANAGER.getConfig().getNameCandidates();
         final var personalityCandidates = Main.CONFIG_MANAGER.getConfig().getPersonalities();
 
-        final var newName = nameCandidates[random.nextInt(0, nameCandidates.length)];
+        String newName;
+        if (villager.getCustomName() != null) {
+            newName = villager.getCustomName().getString();
+        } else {
+            newName = nameCandidates[random.nextInt(0, nameCandidates.length)];
+        }
+
         final var newPersonality = personalityCandidates[random.nextInt(0, personalityCandidates.length)];
 
         return new VillagerMemory(villager.getUUID(),
@@ -67,7 +70,7 @@ public class VillagerManager {
         memory.updateConversation(playerId, conversation);
 
         // Conclude memory if it's going to too large
-        if(conversation.messages.size() > Main.CONFIG_MANAGER.getConfig().getConclusionMessageLimit()) {
+        if (conversation.messages.size() > Main.CONFIG_MANAGER.getConfig().getConclusionMessageLimit()) {
             memory = concludeMemory(memory, playerId);
         }
 
