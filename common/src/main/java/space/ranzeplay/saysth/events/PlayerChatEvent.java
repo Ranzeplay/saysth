@@ -31,22 +31,26 @@ public class PlayerChatEvent {
     private static void performAIChat(ServerPlayer player, String message, VillagerMemory memory) {
         new Thread(() -> {
             var stopwatch = StopWatch.createStarted();
-            String response;
             try {
-                response = Main.VILLAGER_MANAGER.sendMessageToVillager(memory.getId(), player.getUUID(), message);
-            } catch (IOException | InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+                var response = Main.VILLAGER_MANAGER.sendMessageToVillager(memory.getId(), player.getUUID(), message);
+                response.ifPresentOrElse(responseMessage -> {
+                    if (!responseMessage.equals("IGN")) {
+                        player.sendSystemMessage(Component
+                                .literal(String.format("<(Villager) %s> %s", memory.getName(), responseMessage))
+                                .setStyle(Style.EMPTY.withColor(TextColor.fromLegacyFormat(ChatFormatting.AQUA)))
+                        );
 
-            if (!response.equals("IGN")) {
-                player.sendSystemMessage(Component
-                        .literal(String.format("<(Villager) %s> %s", memory.getName(), response))
-                        .setStyle(Style.EMPTY.withColor(TextColor.fromLegacyFormat(ChatFormatting.AQUA)))
-                );
-                player.sendSystemMessage(Component.literal(String.format("Time consumed: %dms",stopwatch.getTime())));
+                    }
+                }, () -> player.sendSystemMessage(Component
+                            .literal(String.format("<(Villager) %s> Failed to response.", memory.getName()))
+                            .setStyle(Style.EMPTY.withColor(TextColor.fromLegacyFormat(ChatFormatting.RED)))
+                ));
+            } catch (IOException e) {
+                Main.LOGGER.warn(e.getMessage());
             }
-
             stopwatch.stop();
+
+            player.sendSystemMessage(Component.literal(String.format("Time consumed: %dms",stopwatch.getTime())));
         }).start();
     }
 

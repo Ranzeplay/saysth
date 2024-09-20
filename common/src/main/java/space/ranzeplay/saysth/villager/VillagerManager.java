@@ -56,7 +56,7 @@ public class VillagerManager {
         Main.CONFIG_MANAGER.updateVillager(memory);
     }
 
-    public String sendMessageToVillager(UUID villagerId, UUID playerId, String message) throws IOException, InterruptedException {
+    public Optional<String> sendMessageToVillager(UUID villagerId, UUID playerId, String message) throws IOException {
         var memory = Main.CONFIG_MANAGER.getVillager(villagerId);
         if (!memory.conversations.containsKey(playerId)) {
             memory.addConversation(playerId);
@@ -65,9 +65,11 @@ public class VillagerManager {
         conversation.addMessage(new Message(ChatRole.USER, message));
 
         var response = sendConversationToCloudflareLLM(conversation);
-
-        conversation.addMessage(new Message(ChatRole.ASSISTANT, response));
-        memory.updateConversation(playerId, conversation);
+        VillagerMemory finalMemory = memory;
+        response.ifPresent(m -> {
+            conversation.addMessage(new Message(ChatRole.ASSISTANT, m));
+            finalMemory.updateConversation(playerId, conversation);
+        });
 
         // Conclude memory if it's going to too large
         if (conversation.messages.size() > Main.CONFIG_MANAGER.getConfig().getConclusionMessageLimit()) {
@@ -83,32 +85,39 @@ public class VillagerManager {
         return Main.CONFIG_MANAGER.isVillagerFileExists(villagerId);
     }
 
-    public VillagerMemory concludeMemory(VillagerMemory villager, UUID playerId) throws IOException, InterruptedException {
+    public VillagerMemory concludeMemory(VillagerMemory villager, UUID playerId) {
         var gson = new Gson();
         var model = new Conversation(new ArrayList<>());
         model.addMessage(new Message(ChatRole.SYSTEM, LLM_CONCLUDE_PROMPT));
         model.addMessage(new Message(ChatRole.USER, gson.toJson(villager.getConversation(playerId))));
         final var villagerSystemPrompt = villager.getConversation(playerId).messages.get(0);
         final var conclusion = sendConversationToCloudflareLLM(model);
+        conclusion.ifPresent(m -> {
+            var conversation = new Conversation(new ArrayList<>());
+            conversation.addMessage(villagerSystemPrompt);
+            conversation.addMessage(new Message(ChatRole.SYSTEM, m));
+            villager.updateConversation(playerId, conversation);
+        });
 
-        var conversation = new Conversation(new ArrayList<>());
-        conversation.addMessage(villagerSystemPrompt);
-        conversation.addMessage(new Message(ChatRole.SYSTEM, conclusion));
-
-        villager.updateConversation(playerId, conversation);
         return villager;
     }
 
-    private String sendConversationToCloudflareLLM(Conversation conversation) throws IOException, InterruptedException {
+    private Optional<String> sendConversationToCloudflareLLM(Conversation conversation) {
         final var gson = new Gson();
         final var config = Main.CONFIG_MANAGER.getConfig();
         final var request = HttpRequest.newBuilder(URI.create("https://api.cloudflare.com/client/v4/accounts/" + config.getCloudflareAccountId() + "/ai/run/" + config.getModelName()))
                 .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(conversation)))
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/json")
-                .headers("Authorization", "Bearer " + config.getCloudflareApiKey())
+                .headers("Authorization", "Bearer %s".formatted(config.getCloudflareApiKey()))
                 .build();
-        final var response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
-        return gson.fromJson(response.body(), ChatResponse.class).getResult().getResponse();
+        final HttpResponse<String> response;
+        try {
+            response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (IOException | InterruptedException e) {
+            Main.LOGGER.warn(e.getMessage());
+            return Optional.empty();
+        }
+        return Optional.of(gson.fromJson(response.body(), ChatResponse.class).getResult().getResponse());
     }
 }
