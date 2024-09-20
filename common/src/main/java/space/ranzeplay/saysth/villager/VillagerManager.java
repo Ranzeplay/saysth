@@ -24,7 +24,7 @@ public class VillagerManager {
         final var personalityCandidates = Main.CONFIG_MANAGER.getConfig().getPersonalities();
 
         String newName;
-        if (villager.getCustomName() != null) {
+        if (villager.getCustomName() != null && Main.CONFIG_MANAGER.getConfig().isUseExistingVillagerName()) {
             newName = villager.getCustomName().getString();
         } else {
             newName = nameCandidates[random.nextInt(0, nameCandidates.length)];

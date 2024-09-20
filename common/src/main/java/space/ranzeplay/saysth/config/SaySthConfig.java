@@ -12,6 +12,7 @@ public class SaySthConfig {
         modelName = "@cf/qwen/qwen1.5-14b-chat-awq";
         conclusionMessageLimit = 10;
         villagerChatPrefix = "$";
+        useExistingVillagerName = true;
     }
 
     String cloudflareApiKey;
@@ -21,4 +22,5 @@ public class SaySthConfig {
     String modelName;
     int conclusionMessageLimit;
     String villagerChatPrefix;
+    boolean useExistingVillagerName;
 }
