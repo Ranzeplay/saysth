@@ -50,7 +50,9 @@ public class PlayerChatEvent {
             }
             stopwatch.stop();
 
-            player.sendSystemMessage(Component.literal(String.format("Time consumed: %dms",stopwatch.getTime())));
+            if (Main.CONFIG_MANAGER.getConfig().isShowTimeConsumption()) {
+                player.sendSystemMessage(Component.literal(String.format("Time consumed: %dms",stopwatch.getTime())));
+            }
         }).start();
     }
 

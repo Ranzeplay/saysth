@@ -13,6 +13,7 @@ public class SaySthConfig {
         conclusionMessageLimit = 10;
         villagerChatPrefix = "$";
         useExistingVillagerName = true;
+        showTimeConsumption = false;
     }
 
     String cloudflareApiKey;
@@ -23,4 +24,5 @@ public class SaySthConfig {
     int conclusionMessageLimit;
     String villagerChatPrefix;
     boolean useExistingVillagerName;
+    boolean showTimeConsumption;
 }
