@@ -16,7 +16,7 @@ import java.util.List;
 
 public class PlayerChatEvent {
     public static void onPlayerChat(ServerPlayer player, String message) throws IOException {
-        if (!message.startsWith("$")) return;
+        if (!message.startsWith(Main.CONFIG_MANAGER.getConfig().getVillagerChatPrefix())) return;
 
         final var nearbyVillagers = getNearbyVillagers(player);
 

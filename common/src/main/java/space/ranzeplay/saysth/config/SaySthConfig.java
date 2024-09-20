@@ -11,6 +11,7 @@ public class SaySthConfig {
         nameCandidates = new String[]{};
         modelName = "@cf/qwen/qwen1.5-14b-chat-awq";
         conclusionMessageLimit = 10;
+        villagerChatPrefix = "$";
     }
 
     String cloudflareApiKey;
@@ -19,4 +20,5 @@ public class SaySthConfig {
     String[] nameCandidates;
     String modelName;
     int conclusionMessageLimit;
+    String villagerChatPrefix;
 }
