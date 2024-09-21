@@ -8,7 +8,7 @@ A Minecraft Mod that connects villagers to AI models.
 
 > We are preparing for v1.0, please wait patiently :)
 > 
-> Any issues are welcome.
+> I'd like to point out that any issues are welcome.
 
 ## Description
 
@@ -45,13 +45,13 @@ Configuration in the `config/saysth-config.json`, you will see the content below
 
 - `cloudflareApiKey`: A Cloudflare API key generated that has access to AI features.
 - `cloudflareAccountId`: Your Cloudflare account ID.
-- `personalities`: A list of string that describes the personality of a villager.
-- `nameCandidates`: A list of string of names that will be put on villagers.
+- `personalities`: A list of strings that describe the personality of a villager ***(The field is required)***.
+- `nameCandidates`: A list of strings of names that will be put on villagers ***(The field is required)***.
 - `modelName`: The LLM model to be used, should exist on Cloudflare
-- `conclusionMessageLimit`: When messages reach this limit, it will be concluded into one concise message.
-- `villagerChatPrefix`: Add the string at the beginning of chat message to show that you are talking to villagers.
+- `conclusionMessageLimit`: When messages reach this limit, they will be concluded into one concise message.
+- `villagerChatPrefix`: Add the string at the beginning of the chat message to show that you are talking to villagers.
 - `useExistingVillagerName`: Use the existing name of a villager according to `CustomName` if possible.
-- `showTimeConsumption`: Show how much time consumed between sending to receiving.
+- `showTimeConsumption`: Show how much time is consumed between sending and receiving.
 
 ### Villager prompt template
 
@@ -62,10 +62,10 @@ You can edit the default prompt applied to each new villager.
 #### Variables
 
 - `{name}`: Villager's name, initialized randomly referred to configuration.
-- `{personality}`: Villager's personality, initialized randomly referred to configuration.
-- `{livingIn}`: The place where the villager lives in, initialized according to game data.
+- `{personality}`: The Villager's personality, initialized randomly referred to as configuration.
+- `{livingIn}`: The place where the villager lives, initialized according to game data.
 - `{profession}`: The profession of the villager, initialized according to game data.
 
 ## Upgrading
 
-When upgrading, for now, please manually add the newly-added config items into `saysth-config.json` file.
+When upgrading, for now, please manually add the newly-added config items into the `saysth-config.json` file.
