@@ -65,3 +65,7 @@ You can edit the default prompt applied to each new villager.
 - `{personality}`: Villager's personality, initialized randomly referred to configuration.
 - `{livingIn}`: The place where the villager lives in, initialized according to game data.
 - `{profession}`: The profession of the villager, initialized according to game data.
+
+## Upgrading
+
+When upgrading, for now, please manually add the newly-added config items into `saysth-config.json` file.
