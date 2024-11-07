@@ -13,6 +13,10 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Random;
+import java.util.UUID;
 import java.util.*;
 
 public class VillagerManager {
@@ -65,6 +69,9 @@ public class VillagerManager {
         conversation.addMessage(new Message(ChatRole.USER, message));
 
         var response = sendConversationToCloudflareLLM(conversation);
+
+        conversation.addMessage(new Message(ChatRole.ASSISTANT, response));
+        memory.updateConversation(playerId, conversation);
         VillagerMemory finalMemory = memory;
         response.ifPresent(m -> {
             conversation.addMessage(new Message(ChatRole.ASSISTANT, m));
@@ -72,7 +79,7 @@ public class VillagerManager {
         });
 
         // Conclude memory if it's going to too large
-        if (conversation.messages.size() > Main.CONFIG_MANAGER.getConfig().getConclusionMessageLimit()) {
+        if(conversation.messages.size() > Main.CONFIG_MANAGER.getConfig().getConclusionMessageLimit()) {
             memory = concludeMemory(memory, playerId);
         }
 
@@ -92,6 +99,16 @@ public class VillagerManager {
         model.addMessage(new Message(ChatRole.USER, gson.toJson(villager.getConversation(playerId))));
         final var villagerSystemPrompt = villager.getConversation(playerId).messages.get(0);
         final var conclusion = sendConversationToCloudflareLLM(model);
+
+        var conversation = new Conversation(new ArrayList<>());
+        conversation.addMessage(villagerSystemPrompt);
+        conversation.addMessage(new Message(ChatRole.SYSTEM, conclusion));
+
+        villager.updateConversation(playerId, conversation);
+        return villager;
+    }
+
+    private String sendConversationToCloudflareLLM(Conversation conversation) throws IOException, InterruptedException {
         conclusion.ifPresent(m -> {
             var conversation = new Conversation(new ArrayList<>());
             conversation.addMessage(villagerSystemPrompt);
