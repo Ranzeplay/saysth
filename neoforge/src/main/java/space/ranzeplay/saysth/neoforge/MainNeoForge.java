@@ -1,4 +1,4 @@
-package space.ranzeplay.saysth.forge;
+package space.ranzeplay.saysth.neoforge;
 
 import com.mojang.logging.LogUtils;
 import net.neoforged.fml.common.Mod;

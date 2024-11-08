@@ -1,4 +1,4 @@
-package space.ranzeplay.saysth.forge;
+package space.ranzeplay.saysth.neoforge;
 
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.ServerChatEvent;
