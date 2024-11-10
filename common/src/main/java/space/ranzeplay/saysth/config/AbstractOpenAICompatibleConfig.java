@@ -2,35 +2,37 @@ package space.ranzeplay.saysth.config;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import lombok.Data;
+import lombok.AllArgsConstructor;
 import space.ranzeplay.saysth.chat.Conversation;
+import space.ranzeplay.saysth.chat.Message;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
 import java.util.Optional;
 
-@Data
-public class CloudflareAIWorkerConfig implements IApiEndpointConfig {
-    public String modelName;
-    public String apiKey;
-    public String accountId;
+public abstract class AbstractOpenAICompatibleConfig implements IApiEndpointConfig {
+    String authCredentials;
+    String modelName;
+
+    abstract String getChatCompletionEndpoint();
 
     @Override
     public HttpRequest.Builder getPartialHttpRequest() {
         return HttpRequest.newBuilder()
-                .uri(URI.create("https://api.cloudflare.com/client/v4/accounts/" + accountId + "/ai/run/" + modelName))
+                .uri(URI.create(getChatCompletionEndpoint()))
                 .header("Content-Type", "application/json")
-                .header("Authorization", "Bearer " + apiKey);
+                .header("Authorization", authCredentials);
     }
 
     @Override
     public Optional<String> sendConversationAndGetResponseText(Conversation conversation) {
         var gson = new Gson();
         var request = getPartialHttpRequest()
-                .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(conversation)))
+                .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(new OpenAIConversation(modelName, conversation.messages))))
                 .build();
 
         String responseBody;
@@ -42,10 +44,22 @@ public class CloudflareAIWorkerConfig implements IApiEndpointConfig {
 
         var response = gson.fromJson(responseBody, JsonObject.class);
         return Optional.of(response
-                .get("result")
+                .get("choices")
+                .getAsJsonArray()
+                .get(0)
                 .getAsJsonObject()
-                .get("response")
+                .get("message")
+                .getAsJsonObject()
+                .get("content")
                 .getAsString()
         );
+    }
+
+    @AllArgsConstructor
+    static class OpenAIConversation {
+        @SuppressWarnings("unused")
+        String model;
+        @SuppressWarnings("unused")
+        ArrayList<Message> messages;
     }
 }

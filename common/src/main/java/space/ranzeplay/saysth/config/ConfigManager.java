@@ -86,7 +86,7 @@ public class ConfigManager {
         if(!getApiConfigFilePath().toFile().exists()) {
             Main.LOGGER.info("Creating API config file");
             getApiConfigFilePath().toFile().createNewFile();
-            var defaultConfig = new GeneralApiConfig();
+            var defaultConfig = new CloudflareAIWorkerConfig();
             var gson = new GsonBuilder().setPrettyPrinting().create();
 
             final var writer = new FileWriter(getApiConfigFilePath().toFile());
@@ -138,8 +138,9 @@ public class ConfigManager {
         var gson = new Gson();
         var reader = new FileReader(getApiConfigFilePath().toFile());
         switch (config.getApiConfigPlatform()) {
-            case "general" -> apiConfig = gson.fromJson(reader, GeneralApiConfig.class);
+            case "openai-compatible" -> apiConfig = gson.fromJson(reader, OpenAICompatibleConfig.class);
             case "cloudflare" -> apiConfig = gson.fromJson(reader, CloudflareAIWorkerConfig.class);
+            case "openai" -> apiConfig = gson.fromJson(reader, OpenAIConfig.class);
             default -> throw new IllegalArgumentException("Invalid API config platform");
         }
 
