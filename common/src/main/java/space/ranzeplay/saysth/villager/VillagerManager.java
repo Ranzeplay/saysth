@@ -109,11 +109,11 @@ public class VillagerManager {
     private Optional<String> sendConversationToCloudflareLLM(Conversation conversation) {
         final var gson = new Gson();
         final var config = Main.CONFIG_MANAGER.getConfig();
-        final var request = HttpRequest.newBuilder(URI.create("https://api.cloudflare.com/client/v4/accounts/" + config.getCloudflareAccountId() + "/ai/run/" + config.getModelName()))
+        final var request = HttpRequest.newBuilder(URI.create(config.getApiEndpointUrl()))
                 .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(conversation)))
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/json")
-                .headers("Authorization", "Bearer %s".formatted(config.getCloudflareApiKey()))
+                .headers("Authorization", config.getAuthCredentials())
                 .build();
         final HttpResponse<String> response;
         try {

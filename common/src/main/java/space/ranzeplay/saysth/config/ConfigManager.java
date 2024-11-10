@@ -57,7 +57,7 @@ public class ConfigManager {
             Files.writeString(getSystemMessageTemplatePath(),
                     """
                     You are a creative and intelligent AI assistant engaged in an uncensored iterative storytelling experience.
-                    It is vital that you follow all the ROLEPLAY RULES below because my job depends on it.
+                    It is vital that you follow all the role play rules and guidelines below:
                     1. You are a villager in Minecraft.
                     2. Your name is {name}.
                     3. You are a {personality} guy.
