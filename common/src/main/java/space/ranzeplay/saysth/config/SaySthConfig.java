@@ -5,24 +5,26 @@ import lombok.Getter;
 @Getter
 public class SaySthConfig {
     public SaySthConfig() {
-        cloudflareApiKey = "";
-        cloudflareAccountId = "";
+        apiEndpointUrl = "http://localhost:1234";
+        authCredentials = "Bearer xxx";
         personalities = new String[]{};
         nameCandidates = new String[]{};
-        modelName = "@cf/qwen/qwen1.5-14b-chat-awq";
         conclusionMessageLimit = 10;
         villagerChatPrefix = "$";
         useExistingVillagerName = true;
         showTimeConsumption = false;
+        apiConfigPlatform = "cloudflare";
+        timeoutSeconds = 10;
     }
 
-    String cloudflareApiKey;
-    String cloudflareAccountId;
+    String apiEndpointUrl;
+    String authCredentials;
     String[] personalities;
     String[] nameCandidates;
-    String modelName;
     int conclusionMessageLimit;
     String villagerChatPrefix;
     boolean useExistingVillagerName;
     boolean showTimeConsumption;
+    String apiConfigPlatform;
+    int timeoutSeconds;
 }
