@@ -13,6 +13,7 @@ public class SaySthConfig {
         villagerChatPrefix = "$";
         useExistingVillagerName = true;
         showTimeConsumption = false;
+        apiConfigPlatform = "general";
     }
 
     String apiEndpointUrl;
@@ -23,4 +24,5 @@ public class SaySthConfig {
     String villagerChatPrefix;
     boolean useExistingVillagerName;
     boolean showTimeConsumption;
+    String apiConfigPlatform;
 }

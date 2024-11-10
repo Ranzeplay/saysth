@@ -16,6 +16,8 @@ public class ConfigManager {
     private final Path configDirectoryPath;
     @Getter
     private SaySthConfig config;
+    @Getter
+    private IApiEndpointConfig apiConfig;
 
     public ConfigManager(@NotNull Path configDirectoryPath) {
         this.configDirectoryPath = configDirectoryPath;
@@ -31,6 +33,10 @@ public class ConfigManager {
 
     private Path getSystemMessageTemplatePath() {
         return configDirectoryPath.resolve("saysth-sys-msg-template.txt");
+    }
+
+    private Path getApiConfigFilePath() {
+        return configDirectoryPath.resolve("saysth-api-config.json");
     }
 
     public void createConfigIfNotExists() throws IOException {
@@ -76,6 +82,17 @@ public class ConfigManager {
             Main.LOGGER.info("Creating villager memory directory");
             getVillagerMemoryPath().toFile().mkdirs();
         }
+
+        if(!getApiConfigFilePath().toFile().exists()) {
+            Main.LOGGER.info("Creating API config file");
+            getApiConfigFilePath().toFile().createNewFile();
+            var defaultConfig = new GeneralApiConfig();
+            var gson = new GsonBuilder().setPrettyPrinting().create();
+
+            final var writer = new FileWriter(getApiConfigFilePath().toFile());
+            writer.write(gson.toJson(defaultConfig));
+            writer.close();
+        }
     }
 
     public void loadConfig() throws IOException {
@@ -85,6 +102,8 @@ public class ConfigManager {
         final var config = gson.fromJson(reader, SaySthConfig.class);
         reader.close();
         this.config = config;
+
+        loadApiConfig();
     }
 
     public VillagerMemory getVillager(@NotNull UUID uuid) throws IOException {
@@ -113,5 +132,17 @@ public class ConfigManager {
 
     public String getSystemMessageTemplate() throws IOException {
         return Files.readString(getSystemMessageTemplatePath());
+    }
+
+    private void loadApiConfig() throws IOException {
+        var gson = new Gson();
+        var reader = new FileReader(getApiConfigFilePath().toFile());
+        switch (config.getApiConfigPlatform()) {
+            case "general" -> apiConfig = gson.fromJson(reader, GeneralApiConfig.class);
+            case "cloudflare" -> apiConfig = gson.fromJson(reader, CloudflareAIWorkerConfig.class);
+            default -> throw new IllegalArgumentException("Invalid API config platform");
+        }
+
+        reader.close();
     }
 }
