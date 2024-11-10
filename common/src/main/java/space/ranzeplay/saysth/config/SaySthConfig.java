@@ -13,7 +13,7 @@ public class SaySthConfig {
         villagerChatPrefix = "$";
         useExistingVillagerName = true;
         showTimeConsumption = false;
-        apiConfigPlatform = "general";
+        apiConfigPlatform = "cloudflare";
     }
 
     String apiEndpointUrl;
