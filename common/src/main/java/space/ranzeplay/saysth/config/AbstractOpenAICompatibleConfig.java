@@ -3,6 +3,7 @@ package space.ranzeplay.saysth.config;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import lombok.AllArgsConstructor;
+import space.ranzeplay.saysth.Main;
 import space.ranzeplay.saysth.chat.Conversation;
 import space.ranzeplay.saysth.chat.Message;
 
@@ -11,6 +12,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -25,7 +27,8 @@ public abstract class AbstractOpenAICompatibleConfig implements IApiEndpointConf
         return HttpRequest.newBuilder()
                 .uri(URI.create(getChatCompletionEndpoint()))
                 .header("Content-Type", "application/json")
-                .header("Authorization", authCredentials);
+                .header("Authorization", authCredentials)
+                .timeout(Duration.ofSeconds(Main.CONFIG_MANAGER.getConfig().getTimeoutSeconds()));
     }
 
     @Override

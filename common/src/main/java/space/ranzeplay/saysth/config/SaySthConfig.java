@@ -14,6 +14,7 @@ public class SaySthConfig {
         useExistingVillagerName = true;
         showTimeConsumption = false;
         apiConfigPlatform = "cloudflare";
+        timeoutSeconds = 10;
     }
 
     String apiEndpointUrl;
@@ -25,4 +26,5 @@ public class SaySthConfig {
     boolean useExistingVillagerName;
     boolean showTimeConsumption;
     String apiConfigPlatform;
+    int timeoutSeconds;
 }
