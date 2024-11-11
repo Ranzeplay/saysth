@@ -45,12 +45,7 @@ public class VillagerMemory {
             conversations.put(playerId, new Conversation(new ArrayList<>()));
         }
 
-        var conversation = conversations.get(playerId);
-        if(conversation.messages.isEmpty()) {
-            conversation.addMessage(new Message(ChatRole.SYSTEM, getCharacter()));
-        }
-
-        return conversation;
+        return conversations.get(playerId);
     }
 
     public void updateConversation(UUID playerId, Conversation conversation) {

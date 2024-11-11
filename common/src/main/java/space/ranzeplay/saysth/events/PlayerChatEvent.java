@@ -9,7 +9,6 @@ import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.phys.AABB;
 import org.apache.commons.lang3.time.StopWatch;
 import space.ranzeplay.saysth.Main;
-import space.ranzeplay.saysth.villager.VillagerMemory;
 
 import java.io.IOException;
 import java.util.List;
@@ -24,15 +23,16 @@ public class PlayerChatEvent {
             final var memory = Main.VILLAGER_MANAGER.getVillager(villager);
             villager.setCustomName(Component.literal(memory.getName()));
 
-            performAIChat(player, message, memory);
+            performAIChat(player, message, villager);
         }
     }
 
-    private static void performAIChat(ServerPlayer player, String message, VillagerMemory memory) {
+    private static void performAIChat(ServerPlayer player, String message, Villager villager) {
         new Thread(() -> {
             var stopwatch = StopWatch.createStarted();
             try {
-                var response = Main.VILLAGER_MANAGER.sendMessageToVillager(memory.getId(), player.getUUID(), message);
+                var memory = Main.VILLAGER_MANAGER.getVillager(villager);
+                var response = Main.VILLAGER_MANAGER.sendMessageToVillager(villager, player, message);
                 response.ifPresentOrElse(responseMessage -> {
                     if (!responseMessage.equals("IGN")) {
                         player.sendSystemMessage(Component

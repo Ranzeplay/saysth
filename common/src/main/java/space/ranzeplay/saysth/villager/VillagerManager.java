@@ -2,6 +2,7 @@ package space.ranzeplay.saysth.villager;
 
 import com.google.gson.Gson;
 import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.player.Player;
 import space.ranzeplay.saysth.Main;
 import space.ranzeplay.saysth.chat.ChatRole;
 import space.ranzeplay.saysth.chat.Conversation;
@@ -55,24 +56,30 @@ public class VillagerManager {
         Main.CONFIG_MANAGER.updateVillager(memory);
     }
 
-    public Optional<String> sendMessageToVillager(UUID villagerId, UUID playerId, String message) throws IOException {
-        var memory = Main.CONFIG_MANAGER.getVillager(villagerId);
-        if (!memory.conversations.containsKey(playerId)) {
-            memory.addConversation(playerId);
+    public Optional<String> sendMessageToVillager(Villager villager, Player player, String message) throws IOException {
+        var memory = Main.CONFIG_MANAGER.getVillager(villager.getUUID());
+        if (!memory.conversations.containsKey(player.getUUID())) {
+            memory.addConversation(player.getUUID());
         }
-        final var conversation = memory.getConversation(playerId);
+        final var conversation = memory.getConversation(player.getUUID());
         conversation.addMessage(new Message(ChatRole.USER, message));
+
+        // Push system messages including villager's trades and character description
+        // Villager character will be on the top of the conversation
+        // Villager trades will be the second message
+        conversation.messages.addFirst(new Message(ChatRole.SYSTEM, formatVillagerTrades(villager)));
+        conversation.messages.addFirst(new Message(ChatRole.SYSTEM, memory.getCharacter()));
 
         var response = Main.CONFIG_MANAGER.getApiConfig().sendConversationAndGetResponseText(conversation);
         VillagerMemory finalMemory = memory;
         response.ifPresent(m -> {
             conversation.addMessage(new Message(ChatRole.ASSISTANT, m));
-            finalMemory.updateConversation(playerId, conversation);
+            finalMemory.updateConversation(player.getUUID(), conversation);
         });
 
         // Conclude memory if it's going to too large
         if (conversation.messages.size() > Main.CONFIG_MANAGER.getConfig().getConclusionMessageLimit()) {
-            memory = concludeMemory(memory, playerId);
+            memory = concludeMemory(memory, player.getUUID());
         }
 
         this.updateVillager(memory);
@@ -89,15 +96,39 @@ public class VillagerManager {
         var model = new Conversation(new ArrayList<>());
         model.addMessage(new Message(ChatRole.SYSTEM, LLM_CONCLUDE_PROMPT));
         model.addMessage(new Message(ChatRole.USER, gson.toJson(villager.getConversation(playerId))));
-        final var villagerSystemPrompt = villager.getConversation(playerId).messages.getFirst();
         final var conclusion = Main.CONFIG_MANAGER.getApiConfig().sendConversationAndGetResponseText(model);
         conclusion.ifPresent(m -> {
             var conversation = new Conversation(new ArrayList<>());
-            conversation.addMessage(villagerSystemPrompt);
             conversation.addMessage(new Message(ChatRole.SYSTEM, m));
             villager.updateConversation(playerId, conversation);
         });
 
         return villager;
+    }
+
+    public String formatVillagerTrades(Villager villager) {
+        var trades = villager.getOffers();
+        var formattedTrades = new ArrayList<String>();
+        for (var trade : trades) {
+            StringBuilder formattedTrade = new StringBuilder();
+            formattedTrade.append(trade.getCostA().getHoverName().getString())
+                    .append(" * ")
+                    .append(trade.getCostA().getCount());
+
+            if (!trade.getCostB().isEmpty()) {
+                formattedTrade.append(" + ")
+                        .append(trade.getCostB().getHoverName().getString())
+                        .append(" * ")
+                        .append(trade.getCostB().getCount());
+            }
+
+            formattedTrade.append(" -> ")
+                    .append(trade.getResult().getHoverName().getString())
+                    .append(" * ")
+                    .append(trade.getResult().getCount());
+
+            formattedTrades.add(formattedTrade.toString());
+        }
+        return String.join("\n", formattedTrades);
     }
 }
