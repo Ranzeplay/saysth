@@ -2,4 +2,3 @@
 **/build/
 **/run/
 .idea/
-gradle/wrapper/gradle-wrapper.jar
