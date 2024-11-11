@@ -108,27 +108,34 @@ public class VillagerManager {
 
     public String formatVillagerTrades(Villager villager) {
         var trades = villager.getOffers();
+        if (trades.isEmpty()) {
+            return "You don't sell anything for now.";
+        }
+
         var formattedTrades = new ArrayList<String>();
+        formattedTrades.add("You ONLY sell the following things\n");
+
         for (var trade : trades) {
             StringBuilder formattedTrade = new StringBuilder();
-            formattedTrade.append(trade.getCostA().getHoverName().getString())
+            formattedTrade
+                    .append(trade.getCostA().getCount())
                     .append(" * ")
-                    .append(trade.getCostA().getCount());
+                    .append(trade.getCostA().getHoverName().getString());
 
             if (!trade.getCostB().isEmpty()) {
-                formattedTrade.append(" + ")
-                        .append(trade.getCostB().getHoverName().getString())
+                formattedTrade.append(" and ")
+                        .append(trade.getCostB().getCount())
                         .append(" * ")
-                        .append(trade.getCostB().getCount());
+                        .append(trade.getCostB().getHoverName().getString());
             }
 
-            formattedTrade.append(" -> ")
-                    .append(trade.getResult().getHoverName().getString())
+            formattedTrade.append(" for ")
+                    .append(trade.getResult().getCount())
                     .append(" * ")
-                    .append(trade.getResult().getCount());
+                    .append(trade.getResult().getHoverName().getString());
 
             formattedTrades.add(formattedTrade.toString());
         }
-        return String.join("\n", formattedTrades);
+        return String.join("; ", formattedTrades);
     }
 }
