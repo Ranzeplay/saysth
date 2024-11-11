@@ -33,10 +33,17 @@ jobs:
       - name: Build
         run: ./gradlew build
       - name: Pack jar
-        run: ./gradlew build
-      - name: Capture build artifacts
+        run: ./gradlew jar
+        
+      - name: Capture Fabric build artifacts
         if: ${{ runner.os == 'Linux' && matrix.java == '21' }} # Only upload artifacts built from latest java on one OS
         uses: actions/upload-artifact@v4
         with:
-          name: Artifacts
-          path: build/libs/
+          name: Artifacts for Fabric
+          path: fabric/build/libs/
+      - name: Capture NeoForge build artifacts
+        if: ${{ runner.os == 'Linux' && matrix.java == '21' }} # Only upload artifacts built from latest java on one OS
+        uses: actions/upload-artifact@v4
+        with:
+          name: Artifacts for NeoForge
+          path: neoforge/build/libs/
