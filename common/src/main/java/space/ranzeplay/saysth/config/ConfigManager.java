@@ -19,24 +19,24 @@ public class ConfigManager {
     @Getter
     private IApiEndpointConfig apiConfig;
 
-    public ConfigManager(@NotNull Path configDirectoryPath) {
-        this.configDirectoryPath = configDirectoryPath;
+    public ConfigManager(@NotNull Path minecraftConfigDirectoryPath) {
+        this.configDirectoryPath = minecraftConfigDirectoryPath.resolve("saysth");
     }
 
     private Path getConfigFilePath() {
-        return configDirectoryPath.resolve("saysth-config.json");
+        return configDirectoryPath.resolve("config.json");
     }
 
     private Path getVillagerMemoryPath() {
-        return configDirectoryPath.resolve("saysth-villagers");
+        return configDirectoryPath.resolve("villagers");
     }
 
     private Path getSystemMessageTemplatePath() {
-        return configDirectoryPath.resolve("saysth-sys-msg-template.txt");
+        return configDirectoryPath.resolve("villager-character-template.txt");
     }
 
     private Path getApiConfigFilePath() {
-        return configDirectoryPath.resolve("saysth-api-config.json");
+        return configDirectoryPath.resolve("api-config.json");
     }
 
     public void createConfigIfNotExists() throws IOException {
