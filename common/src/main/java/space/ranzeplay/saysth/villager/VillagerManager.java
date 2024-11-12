@@ -16,7 +16,7 @@ import java.util.UUID;
 import java.util.*;
 
 public class VillagerManager {
-    private static final String LLM_CONCLUDE_PROMPT = "I'll give you a json text containing a conversation, you need to conclude the content into a complete paragraph concisely using English.";
+    private static final String LLM_CONCLUDE_PROMPT = "Conclude the following paragraphs into one complete paragraph concisely using English.";
 
     private static VillagerMemory generateRandomVillagerMemory(Villager villager) {
         final var random = new Random();
@@ -113,29 +113,30 @@ public class VillagerManager {
         }
 
         var formattedTrades = new ArrayList<String>();
-        formattedTrades.add("You ONLY sell the following things\n");
+        formattedTrades.add("You ONLY have the following trades:");
 
         for (var trade : trades) {
             StringBuilder formattedTrade = new StringBuilder();
-            formattedTrade
+
+            formattedTrade.append("- ")
                     .append(trade.getCostA().getCount())
-                    .append(" * ")
-                    .append(trade.getCostA().getHoverName().getString());
+                    .append("x ")
+                    .append(trade.getCostA().getHoverName().getString().toLowerCase());
 
             if (!trade.getCostB().isEmpty()) {
                 formattedTrade.append(" and ")
                         .append(trade.getCostB().getCount())
-                        .append(" * ")
-                        .append(trade.getCostB().getHoverName().getString());
+                        .append("x ")
+                        .append(trade.getCostB().getHoverName().getString().toLowerCase());
             }
 
             formattedTrade.append(" for ")
                     .append(trade.getResult().getCount())
-                    .append(" * ")
-                    .append(trade.getResult().getHoverName().getString());
+                    .append("x ")
+                    .append(trade.getResult().getHoverName().getString().toLowerCase());
 
             formattedTrades.add(formattedTrade.toString());
         }
-        return String.join("; ", formattedTrades);
+        return String.join("\n", formattedTrades);
     }
 }

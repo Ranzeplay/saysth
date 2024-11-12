@@ -5,8 +5,6 @@ import lombok.Getter;
 @Getter
 public class SaySthConfig {
     public SaySthConfig() {
-        apiEndpointUrl = "http://localhost:1234";
-        authCredentials = "Bearer xxx";
         personalities = new String[]{};
         nameCandidates = new String[]{};
         conclusionMessageLimit = 10;
@@ -17,8 +15,6 @@ public class SaySthConfig {
         timeoutSeconds = 10;
     }
 
-    String apiEndpointUrl;
-    String authCredentials;
     String[] personalities;
     String[] nameCandidates;
     int conclusionMessageLimit;
