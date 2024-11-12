@@ -10,5 +10,32 @@ sidebar_position: 1
 
 A Minecraft Mod that connects villagers to remote AI models.
 
-The mod uses `@cf/qwen/qwen1.5-14b-chat-awq` model on Cloudflare AI
-to enable players to interact with villagers via text.
+## Basic information
+
+- [GitHub](https://github.com/Ranzeplay/saysth)
+
+- [Modrinth](https://modrinth.com/mod/say-something/)
+
+## Wiki
+
+See wiki [here](https://saysth.ranzeplay.space).
+
+## Features
+
+- Multiple AI platforms support.
+
+- Make use of villager's data, such as trades and profession.
+
+- Auto conclude conversation so that it won't get too long.
+
+## Versions
+
+- **0.3** (1.21)
+
+- 0.2 (1.20.1)
+
+- 0.1 (1.20.1, 1.21)
+
+## License
+
+[MIT License](https://github.com/Ranzeplay/saysth/blob/master/LICENSE)
