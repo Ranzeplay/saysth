@@ -40,13 +40,6 @@ const config: Config = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl: "https://github.com/Ranzeplay/saysth/tree/main/docs",
-          lastVersion: "current",
-          versions: {
-            current: {
-              label: "Dev",
-              path: "dev",
-            },
-          },
         },
         blog: {
           showReadingTime: true,
