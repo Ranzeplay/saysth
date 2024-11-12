@@ -8,4 +8,4 @@ Villagers may not respond if your message isn't related to them.
 
 ## After v0.3
 
-You can also change the prefix sign in [config](config#main-config)
+You can also change the prefix sign in [config](./config/main#content)
