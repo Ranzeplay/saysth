@@ -1,5 +1,0 @@
-name: saysth
-version: '${version}'
-main: space.ranzeplay.spigot.MainSpigot
-api-version: '1.21'
-authors: [ Jeb Feng ]
