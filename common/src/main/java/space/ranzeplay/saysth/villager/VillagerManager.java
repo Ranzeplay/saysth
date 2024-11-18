@@ -9,10 +9,6 @@ import space.ranzeplay.saysth.chat.Conversation;
 import space.ranzeplay.saysth.chat.Message;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Random;
-import java.util.UUID;
 import java.util.*;
 
 public class VillagerManager {
@@ -72,10 +68,13 @@ public class VillagerManager {
 
         var response = Main.CONFIG_MANAGER.getApiConfig().sendConversationAndGetResponseText(conversation);
         VillagerMemory finalMemory = memory;
-        response.ifPresent(m -> {
-            conversation.addMessage(new Message(ChatRole.ASSISTANT, m));
-            finalMemory.updateConversation(player.getUUID(), conversation);
-        });
+        response.ifPresent(m -> conversation.addMessage(new Message(ChatRole.ASSISTANT, m)));
+
+        // Remove system messages
+        conversation.messages.removeFirst();
+        conversation.messages.removeFirst();
+
+        finalMemory.updateConversation(player.getUUID(), conversation);
 
         // Conclude memory if it's going to too large
         if (conversation.messages.size() > Main.CONFIG_MANAGER.getConfig().getConclusionMessageLimit()) {
