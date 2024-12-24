@@ -21,6 +21,7 @@ public abstract class AbstractOpenAICompatibleConfig implements IApiEndpointConf
     String modelName;
 
     abstract String getChatCompletionEndpoint();
+    abstract String buildAuthCredentials();
 
     @Override
     public HttpRequest.Builder getPartialHttpRequest() {

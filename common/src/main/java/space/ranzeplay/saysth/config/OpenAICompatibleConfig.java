@@ -7,4 +7,9 @@ public class OpenAICompatibleConfig extends AbstractOpenAICompatibleConfig {
     String getChatCompletionEndpoint() {
         return chatCompletionEndpoint;
     }
+
+    @Override
+    String buildAuthCredentials() {
+        return authCredentials;
+    }
 }
