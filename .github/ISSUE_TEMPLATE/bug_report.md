@@ -29,6 +29,7 @@ If possible, add the console log of the game.
 **Version information**
 - Game version: `<Minecraft version>`
 - Mod loader: `<Forge or Fabric>`
+- AI platform: `<Cloudflare/OpenAI/etc.>`
 - OS version: `<OS version>`
 
 **Additional context**
