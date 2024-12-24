@@ -20,7 +20,7 @@
 
 ```json
 {
-    "authCredentials": "xxx-xxx-xxx",
+    "authCredentials": "Bearer xxx-xxx-xxx",
     "modelName": "gpt-4"
 }
 ```
