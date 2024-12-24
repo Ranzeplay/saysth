@@ -38,15 +38,22 @@ public abstract class AbstractOpenAICompatibleConfig implements IApiEndpointConf
                 .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(new OpenAIConversation(modelName, conversation.messages))))
                 .build();
 
-        String responseBody;
+
+        HttpResponse<String> response;
         try {
-            responseBody = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString()).body();
+            response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
         } catch (IOException | InterruptedException e) {
+            Main.LOGGER.error("Failed to send conversation: {}", e.getMessage());
             return Optional.empty();
         }
 
-        var response = gson.fromJson(responseBody, JsonObject.class);
-        return Optional.of(response
+        if(response.statusCode() != 200) {
+            Main.LOGGER.error("Failed to send conversation: [{}] {}", response.statusCode(), response.body());
+            return Optional.empty();
+        }
+
+        var responseBody = gson.fromJson(response.body(), JsonObject.class);
+        return Optional.of(responseBody
                 .get("choices")
                 .getAsJsonArray()
                 .get(0)
