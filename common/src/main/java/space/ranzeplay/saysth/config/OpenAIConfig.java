@@ -5,4 +5,9 @@ public class OpenAIConfig extends AbstractOpenAICompatibleConfig {
     String getChatCompletionEndpoint() {
         return "https://api.openai.com/v1/chat/completions";
     }
+
+    @Override
+    String buildAuthCredentials() {
+        return "Bearer " + authCredentials;
+    }
 }
