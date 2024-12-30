@@ -26,7 +26,9 @@ See wiki [here](https://saysth.ranzeplay.space).
 
 ## Versions
 
-- **1.0 (1.21)**
+- **1.1 (1.21.4)**
+
+- 1.0 (1.21)
 
 - 0.3 (1.21)
 
