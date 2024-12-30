@@ -12,6 +12,7 @@ import space.ranzeplay.saysth.Main;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class PlayerChatEvent {
     public static void onPlayerChat(ServerPlayer player, String message) throws IOException {
@@ -51,7 +52,7 @@ public class PlayerChatEvent {
             stopwatch.stop();
 
             if (Main.CONFIG_MANAGER.getConfig().isShowTimeConsumption()) {
-                player.sendSystemMessage(Component.literal(String.format("Time consumed: %dms",stopwatch.getTime())));
+                player.sendSystemMessage(Component.literal(String.format("Time consumed: %dms",stopwatch.getTime(TimeUnit.MILLISECONDS))));
             }
         }).start();
     }
