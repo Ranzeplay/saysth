@@ -8,6 +8,6 @@ public class OpenAIConfig extends AbstractOpenAICompatibleConfig {
 
     @Override
     String buildAuthCredentials() {
-        return "Bearer " + authCredentials;
+        return authCredentials.startsWith("Bearer ") ? authCredentials : "Bearer " + authCredentials;
     }
 }
