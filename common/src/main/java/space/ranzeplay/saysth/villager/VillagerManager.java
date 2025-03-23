@@ -7,6 +7,7 @@ import space.ranzeplay.saysth.Main;
 import space.ranzeplay.saysth.chat.ChatRole;
 import space.ranzeplay.saysth.chat.Conversation;
 import space.ranzeplay.saysth.chat.Message;
+import space.ranzeplay.saysth.config.ConfigManager;
 
 import java.io.IOException;
 import java.util.*;
@@ -66,7 +67,12 @@ public class VillagerManager {
         conversation.messages.addFirst(new Message(ChatRole.SYSTEM, formatVillagerTrades(villager)));
         conversation.messages.addFirst(new Message(ChatRole.SYSTEM, memory.getCharacter()));
 
-        var response = Main.CONFIG_MANAGER.getApiConfig().sendConversationAndGetResponseText(conversation);
+        final var promptMap = Main.CONFIG_MANAGER.getProfessionSpecificPrompts();
+        if(promptMap.keySet().stream().anyMatch(p -> p.equalsIgnoreCase(villager.getVillagerData().getProfession().name()))) {
+            conversation.addMessage(new Message(ChatRole.SYSTEM, promptMap.get(villager.getVillagerData().getProfession().name())));
+        }
+
+        final var response = Main.CONFIG_MANAGER.getApiConfig().sendConversationAndGetResponseText(conversation);
         VillagerMemory finalMemory = memory;
         response.ifPresent(m -> conversation.addMessage(new Message(ChatRole.ASSISTANT, m)));
 
