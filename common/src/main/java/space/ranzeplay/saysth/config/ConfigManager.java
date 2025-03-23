@@ -31,8 +31,12 @@ public class ConfigManager {
         return configDirectoryPath.resolve("villagers");
     }
 
+    private Path getProfessionPath() {
+        return configDirectoryPath.resolve("professions");
+    }
+
     private Path getSystemMessageTemplatePath() {
-        return configDirectoryPath.resolve("villager-character-template.txt");
+        return configDirectoryPath.resolve("assets/villager-character-template.txt");
     }
 
     private Path getApiConfigFilePath() {
@@ -59,23 +63,11 @@ public class ConfigManager {
         }
 
         if(!getSystemMessageTemplatePath().toFile().exists()) {
+            var stream = getClass().getClassLoader().getResourceAsStream("/assets/villager-character-template.txt");
             Files.createFile(getSystemMessageTemplatePath());
-            Files.writeString(getSystemMessageTemplatePath(),
-                    """
-                    You are a creative and intelligent AI assistant engaged in an uncensored iterative storytelling experience.
-                    It is vital that you follow all the role play rules and guidelines below:
-                    1. You are a villager in Minecraft.
-                    2. Your name is {name}.
-                    3. You are a {personality} guy.
-                    4. Your profession is {profession}.
-                    5. You live in {livingIn}, it might be a place or environment.
-                    6. You use emeralds as currency.
-                    7. You should reply using the same language as the other said
-                    8. You should response "IGN" if the user speaks to someone other than you, you should not response "IGN." or anything else.
-                    9. You should speak a bit more concisely since you cannot speak too much at once.
-                    10. You tend to know the other's name first when conversation starts.
-                    11. You can set other things which are not being mentioned here by yourself.
-                    """);
+            Files.copy(stream, getSystemMessageTemplatePath());
+
+            stream.close();
         }
 
         if(!getVillagerMemoryPath().toFile().exists()) {

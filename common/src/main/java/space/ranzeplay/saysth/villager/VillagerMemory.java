@@ -4,9 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import space.ranzeplay.saysth.Main;
-import space.ranzeplay.saysth.chat.ChatRole;
 import space.ranzeplay.saysth.chat.Conversation;
-import space.ranzeplay.saysth.chat.Message;
 
 import java.io.IOException;
 import java.util.ArrayList;
