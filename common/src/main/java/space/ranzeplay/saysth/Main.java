@@ -22,7 +22,7 @@ public final class Main {
         try {
             CONFIG_MANAGER.createConfigIfNotExists();
             CONFIG_MANAGER.loadConfig();
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
 

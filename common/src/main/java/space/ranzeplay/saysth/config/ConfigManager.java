@@ -8,9 +8,11 @@ import space.ranzeplay.saysth.Main;
 import space.ranzeplay.saysth.villager.VillagerMemory;
 
 import java.io.*;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
+import java.util.jar.JarFile;
 
 public class ConfigManager {
     private final Path configDirectoryPath;
@@ -36,14 +38,14 @@ public class ConfigManager {
     }
 
     private Path getSystemMessageTemplatePath() {
-        return configDirectoryPath.resolve("assets/villager-character-template.txt");
+        return configDirectoryPath.resolve("villager-character-template.txt");
     }
 
     private Path getApiConfigFilePath() {
         return configDirectoryPath.resolve("api-config.json");
     }
 
-    public void createConfigIfNotExists() throws IOException {
+    public void createConfigIfNotExists() throws IOException, URISyntaxException {
         if(!configDirectoryPath.toFile().exists()) {
             Main.LOGGER.info("Creating config directory");
             configDirectoryPath.toFile().mkdirs();
@@ -63,11 +65,33 @@ public class ConfigManager {
         }
 
         if(!getSystemMessageTemplatePath().toFile().exists()) {
-            var stream = getClass().getClassLoader().getResourceAsStream("/assets/villager-character-template.txt");
-            Files.createFile(getSystemMessageTemplatePath());
+            var stream = getClass().getResourceAsStream("/assets/villager-character-template.txt");
+            // Files.createFile(getSystemMessageTemplatePath());
+            assert stream != null;
             Files.copy(stream, getSystemMessageTemplatePath());
 
             stream.close();
+        }
+
+        if(!getProfessionPath().toFile().exists()) {
+            Main.LOGGER.info("Creating profession directory");
+            getProfessionPath().toFile().mkdirs();
+        }
+        var professions = getClass().getResource("/assets/professions");
+        assert professions != null;
+        var entries = new JarFile(new File(getClass().getProtectionDomain().getCodeSource().getLocation().toURI())).entries();
+        while (entries.hasMoreElements()) {
+            var entry = entries.nextElement();
+            if (entry.getName().startsWith("assets/professions/") && entry.getName().endsWith(".txt")) {
+                var targetFile = getProfessionPath().resolve(entry.getName().substring("assets/professions/".length())).toFile();
+                if (!targetFile.exists()) {
+                    // targetFile.createNewFile();
+                    var stream = getClass().getResourceAsStream("/" + entry.getName());
+                    assert stream != null;
+                    Files.copy(stream, targetFile.toPath());
+                    stream.close();
+                }
+            }
         }
 
         if(!getVillagerMemoryPath().toFile().exists()) {
