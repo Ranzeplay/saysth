@@ -7,10 +7,15 @@ import org.jetbrains.annotations.NotNull;
 import space.ranzeplay.saysth.Main;
 import space.ranzeplay.saysth.villager.VillagerMemory;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.jar.JarFile;
 
@@ -20,6 +25,8 @@ public class ConfigManager {
     private SaySthConfig config;
     @Getter
     private IApiEndpointConfig apiConfig;
+    @Getter
+    private HashMap<String, String> professionSpecificPrompts;
 
     public ConfigManager(@NotNull Path minecraftConfigDirectoryPath) {
         this.configDirectoryPath = minecraftConfigDirectoryPath.resolve("saysth");
@@ -46,12 +53,12 @@ public class ConfigManager {
     }
 
     public void createConfigIfNotExists() throws IOException, URISyntaxException {
-        if(!configDirectoryPath.toFile().exists()) {
+        if (!configDirectoryPath.toFile().exists()) {
             Main.LOGGER.info("Creating config directory");
             configDirectoryPath.toFile().mkdirs();
         }
 
-        if(!getConfigFilePath().toFile().exists()) {
+        if (!getConfigFilePath().toFile().exists()) {
             Main.LOGGER.info("Creating config file");
             getConfigFilePath().toFile().createNewFile();
 
@@ -64,16 +71,15 @@ public class ConfigManager {
             writer.close();
         }
 
-        if(!getSystemMessageTemplatePath().toFile().exists()) {
+        if (!getSystemMessageTemplatePath().toFile().exists()) {
             var stream = getClass().getResourceAsStream("/assets/villager-character-template.txt");
-            // Files.createFile(getSystemMessageTemplatePath());
             assert stream != null;
             Files.copy(stream, getSystemMessageTemplatePath());
 
             stream.close();
         }
 
-        if(!getProfessionPath().toFile().exists()) {
+        if (!getProfessionPath().toFile().exists()) {
             Main.LOGGER.info("Creating profession directory");
             getProfessionPath().toFile().mkdirs();
         }
@@ -85,7 +91,6 @@ public class ConfigManager {
             if (entry.getName().startsWith("assets/professions/") && entry.getName().endsWith(".txt")) {
                 var targetFile = getProfessionPath().resolve(entry.getName().substring("assets/professions/".length())).toFile();
                 if (!targetFile.exists()) {
-                    // targetFile.createNewFile();
                     var stream = getClass().getResourceAsStream("/" + entry.getName());
                     assert stream != null;
                     Files.copy(stream, targetFile.toPath());
@@ -94,12 +99,12 @@ public class ConfigManager {
             }
         }
 
-        if(!getVillagerMemoryPath().toFile().exists()) {
+        if (!getVillagerMemoryPath().toFile().exists()) {
             Main.LOGGER.info("Creating villager memory directory");
             getVillagerMemoryPath().toFile().mkdirs();
         }
 
-        if(!getApiConfigFilePath().toFile().exists()) {
+        if (!getApiConfigFilePath().toFile().exists()) {
             Main.LOGGER.info("Creating API config file");
             getApiConfigFilePath().toFile().createNewFile();
             var defaultConfig = new CloudflareAIWorkerConfig();
@@ -120,6 +125,7 @@ public class ConfigManager {
         this.config = config;
 
         loadApiConfig();
+        loadProfessionConfig();
     }
 
     public VillagerMemory getVillager(@NotNull UUID uuid) throws IOException {
@@ -161,5 +167,14 @@ public class ConfigManager {
         }
 
         reader.close();
+    }
+
+    private void loadProfessionConfig() throws IOException {
+        professionSpecificPrompts = new HashMap<>();
+        var professionDir = getProfessionPath().toFile();
+        for (var file : Objects.requireNonNull(professionDir.listFiles(f -> f.getName().endsWith(".txt")))) {
+            var text = Files.readString(file.toPath());
+            professionSpecificPrompts.put(file.getName().replace(".txt", ""), text);
+        }
     }
 }
