@@ -1,13 +1,16 @@
 package space.ranzeplay.saysth.villager;
 
 import com.google.gson.Gson;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.trading.MerchantOffers;
 import space.ranzeplay.saysth.Main;
 import space.ranzeplay.saysth.chat.ChatRole;
 import space.ranzeplay.saysth.chat.Conversation;
 import space.ranzeplay.saysth.chat.Message;
 import space.ranzeplay.saysth.config.ConfigManager;
+import space.ranzeplay.saysth.instant.InstantDataProvider;
 
 import java.io.IOException;
 import java.util.*;
@@ -54,6 +57,8 @@ public class VillagerManager {
     }
 
     public Optional<String> sendMessageToVillager(Villager villager, Player player, String message) throws IOException {
+        final var instantDataProvider = new InstantDataProvider(villager, player);
+
         var memory = Main.CONFIG_MANAGER.getVillager(villager.getUUID());
         if (!memory.conversations.containsKey(player.getUUID())) {
             memory.addConversation(player.getUUID());
@@ -64,13 +69,15 @@ public class VillagerManager {
         // Push system messages including villager's trades and character description
         // Villager character will be on the top of the conversation
         // Villager trades will be the second message
-        conversation.messages.addFirst(new Message(ChatRole.SYSTEM, formatVillagerTrades(villager)));
+        conversation.messages.addFirst(new Message(ChatRole.SYSTEM, formatVillagerTrades(instantDataProvider.getOffers())));
         conversation.messages.addFirst(new Message(ChatRole.SYSTEM, memory.getCharacter()));
 
         final var promptMap = Main.CONFIG_MANAGER.getProfessionSpecificPrompts();
         if(promptMap.keySet().stream().anyMatch(p -> p.equalsIgnoreCase(villager.getVillagerData().getProfession().name()))) {
             conversation.addMessage(new Message(ChatRole.SYSTEM, promptMap.get(villager.getVillagerData().getProfession().name())));
         }
+
+        conversation.messages.addFirst(new Message(ChatRole.SYSTEM, formatPlayerEffects(instantDataProvider.getPlayerEffects())));
 
         final var response = Main.CONFIG_MANAGER.getApiConfig().sendConversationAndGetResponseText(conversation);
         VillagerMemory finalMemory = memory;
@@ -111,8 +118,7 @@ public class VillagerManager {
         return villager;
     }
 
-    public String formatVillagerTrades(Villager villager) {
-        var trades = villager.getOffers();
+    public String formatVillagerTrades(MerchantOffers trades) {
         if (trades.isEmpty()) {
             return "You don't sell anything for now.";
         }
@@ -143,5 +149,25 @@ public class VillagerManager {
             formattedTrades.add(formattedTrade.toString());
         }
         return String.join("\n", formattedTrades);
+    }
+
+    public String formatPlayerEffects(MobEffectInstance[] effects) {
+        if (effects.length == 0) {
+            return "The player does not have any effects.";
+        }
+
+        var formattedEffects = new ArrayList<String>();
+        formattedEffects.add("The player has the following effects:");
+
+        for (var effect : effects) {
+            String formattedEffect = "- " +
+                    effect.getEffect().getRegisteredName() +
+                    " for " +
+                    effect.getDuration() / 20 +
+                    " seconds";
+
+            formattedEffects.add(formattedEffect);
+        }
+        return String.join("\n", formattedEffects);
     }
 }

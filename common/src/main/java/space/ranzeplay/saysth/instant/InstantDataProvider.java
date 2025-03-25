@@ -1,6 +1,7 @@
 package space.ranzeplay.saysth.instant;
 
 import lombok.AllArgsConstructor;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.trading.MerchantOffers;
@@ -39,5 +40,9 @@ public class InstantDataProvider {
 
     public MerchantOffers getOffers(){
         return villager.getOffers();
+    }
+
+    public MobEffectInstance[] getPlayerEffects(){
+        return player.getActiveEffects().toArray(MobEffectInstance[]::new);
     }
 }
