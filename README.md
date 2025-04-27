@@ -16,6 +16,8 @@ A Minecraft Mod that connects villagers to remote AI models.
 
 See wiki [here](https://saysth.ranzeplay.space).
 
+Also you can checkout wiki indexed by DeepWiki [here](https://deepwiki.com/Ranzeplay/saysth/).
+
 ## Features
 
 - Multiple AI platforms support.
