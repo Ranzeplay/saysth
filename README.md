@@ -28,7 +28,7 @@ Also you can checkout wiki indexed by DeepWiki [here](https://deepwiki.com/Ranze
 
 ## Versions
 
-- **1.1 (1.21.1, 1.21.4, 1.21.5)**
+- **1.1 (1.21.1, 1.21.4, 1.21.5, 1.21.6)**
 
 - 1.0 (1.21)
 
