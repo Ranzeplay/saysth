@@ -85,19 +85,34 @@ public class ConfigManager {
         }
         var professions = getClass().getResource("/assets/professions");
         assert professions != null;
-        var entries = new JarFile(new File(getClass().getProtectionDomain().getCodeSource().getLocation().toURI())).entries();
-        while (entries.hasMoreElements()) {
-            var entry = entries.nextElement();
-            if (entry.getName().startsWith("assets/professions/") && entry.getName().endsWith(".txt")) {
-                var targetFile = getProfessionPath().resolve(entry.getName().substring("assets/professions/".length())).toFile();
-                if (!targetFile.exists()) {
-                    var stream = getClass().getResourceAsStream("/" + entry.getName());
-                    assert stream != null;
-                    Files.copy(stream, targetFile.toPath());
-                    stream.close();
+        var path = getClass().getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
+        // remove content after last .jar if any
+        if (path.contains(".jar")) {
+            path = path.substring(0, path.lastIndexOf(".jar") + 4);
+        }
+
+        try (var jarFile = new JarFile(new File(path))) {
+            if (jarFile.getManifest() == null) {
+                throw new IOException("Jar file does not contain a manifest");
+            }
+
+            var entries = jarFile.entries();
+            while (entries.hasMoreElements()) {
+                var entry = entries.nextElement();
+                if (entry.getName().startsWith("assets/professions/") && entry.getName().endsWith(".txt")) {
+                    var targetFile = getProfessionPath().resolve(entry.getName().substring("assets/professions/".length())).toFile();
+                    if (!targetFile.exists()) {
+                        var stream = getClass().getResourceAsStream("/" + entry.getName());
+                        assert stream != null;
+                        Files.copy(stream, targetFile.toPath());
+                        stream.close();
+                    }
                 }
             }
+        } catch (IOException e) {
+            Main.LOGGER.error("Failed to open jar file: {}", e.getMessage());
         }
+
 
         if (!getVillagerMemoryPath().toFile().exists()) {
             Main.LOGGER.info("Creating villager memory directory");
