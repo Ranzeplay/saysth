@@ -11,7 +11,7 @@ public class InstantDataProvider {
     Player player;
 
     public long getWorldTime() {
-        return villager.getCommandSenderWorld().getDayTime() % 24000; // Get the current time of the world
+        return villager.level().getDayTime() % 24000; // Get the current time of the world
     }
 
     public String getWorldTimeFormatted() {

@@ -62,6 +62,6 @@ public class PlayerChatEvent {
         final var position = player.getEyePosition().add(look.scale(4));
         final var posA = position.add(-5, -5, -5);
         final var posB = position.add(5, 5, 5);
-        return player.getCommandSenderWorld().getEntitiesOfClass(Villager.class, new AABB(posA, posB));
+        return player.level().getEntitiesOfClass(Villager.class, new AABB(posA, posB));
     }
 }

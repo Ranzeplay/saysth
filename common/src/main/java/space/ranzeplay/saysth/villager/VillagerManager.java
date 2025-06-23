@@ -7,7 +7,6 @@ import space.ranzeplay.saysth.Main;
 import space.ranzeplay.saysth.chat.ChatRole;
 import space.ranzeplay.saysth.chat.Conversation;
 import space.ranzeplay.saysth.chat.Message;
-import space.ranzeplay.saysth.config.ConfigManager;
 
 import java.io.IOException;
 import java.util.*;
@@ -32,8 +31,8 @@ public class VillagerManager {
         return new VillagerMemory(villager.getUUID(),
                 newName,
                 newPersonality,
-                villager.getVillagerData().getProfession().name(),
-                villager.getVillagerData().getType().toString(),
+                villager.getVillagerData().profession().value().name().getString(),
+                villager.getVillagerData().type().value().toString(),
                 new HashMap<>());
     }
 
@@ -68,8 +67,8 @@ public class VillagerManager {
         conversation.messages.addFirst(new Message(ChatRole.SYSTEM, memory.getCharacter()));
 
         final var promptMap = Main.CONFIG_MANAGER.getProfessionSpecificPrompts();
-        if(promptMap.keySet().stream().anyMatch(p -> p.equalsIgnoreCase(villager.getVillagerData().getProfession().name()))) {
-            conversation.addMessage(new Message(ChatRole.SYSTEM, promptMap.get(villager.getVillagerData().getProfession().name())));
+        if(promptMap.keySet().stream().anyMatch(p -> p.equalsIgnoreCase(villager.getVillagerData().profession().value().name().getString()))) {
+            conversation.addMessage(new Message(ChatRole.SYSTEM, promptMap.get(villager.getVillagerData().profession().value().name().getString())));
         }
 
         final var response = Main.CONFIG_MANAGER.getApiConfig().sendConversationAndGetResponseText(conversation);
