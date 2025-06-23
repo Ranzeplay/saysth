@@ -1,4 +1,3 @@
-````
 # 主配置
 
 ## 内容
@@ -35,4 +34,3 @@
 对于NeoForge和Fabric，配置目录是相对于游戏jar文件的 `config/saysth`。
 
 对于Spigot，配置目录是相对于 `spigot.jar` 的 `plugins/saysth`。
-````
