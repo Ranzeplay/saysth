@@ -4,7 +4,6 @@ import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import HomepageFeatures from '@site/src/components/HomepageFeatures';
 import Heading from '@theme/Heading';
-import Translate, { translate } from '@docusaurus/Translate';
 
 import styles from './index.module.css';
 
@@ -21,20 +20,12 @@ function HomepageHeader() {
           <Link
             className="button button--secondary button--lg"
             to="/docs/intro">
-            <Translate
-              id="homepage.buttons.viewDocs"
-              description="View latest docs button text">
-              View latest docs
-            </Translate>
+            查看最新文档
           </Link>
           <Link
             className="button button--secondary button--lg"
             to="https://modrinth.com/mod/say-something">
-            <Translate
-              id="homepage.buttons.download"
-              description="Download button text">
-              Download
-            </Translate>
+            下载
           </Link>
         </div>
       </div>
@@ -46,16 +37,8 @@ export default function Home(): JSX.Element {
   const {siteConfig} = useDocusaurusContext();
   return (
     <Layout
-      title={translate({
-        id: 'homepage.title',
-        message: `Hello from ${siteConfig.title}`,
-        description: 'The homepage title'
-      })}
-      description={translate({
-        id: 'homepage.description',
-        message: 'Let LLM models empower Minecraft villagers.',
-        description: 'The homepage description'
-      })}>
+      title={`欢迎使用 ${siteConfig.title}`}
+      description="让LLM模型为Minecraft村民赋能">
       <HomepageHeader />
       <main>
         <HomepageFeatures />

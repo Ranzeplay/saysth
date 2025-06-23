@@ -1,39 +1,64 @@
 import clsx from 'clsx';
 import Heading from '@theme/Heading';
 import styles from './styles.module.css';
+import Translate from '@docusaurus/Translate';
 
 type FeatureItem = {
-  title: string;
+  title: JSX.Element;
   Svg: React.ComponentType<React.ComponentProps<'svg'>>;
   description: JSX.Element;
 };
 
 const FeatureList: FeatureItem[] = [
   {
-    title: 'Easy to Use',
+    title: (
+      <Translate
+        id="homepage.features.easyToUse.title"
+        description="Title of easy to use feature">
+        Easy to Use
+      </Translate>
+    ),
     Svg: require('@site/static/img/undraw_setup_wizard_re_nday.svg').default,
     description: (
-      <>
+      <Translate
+        id="homepage.features.easyToUse.description"
+        description="Description of easy to use feature">
         Almost out-of-the-box, directly use after setting up necessary configurations.
-      </>
+      </Translate>
     ),
   },
   {
-    title: 'Multiple Mod Loaders',
+    title: (
+      <Translate
+        id="homepage.features.multipleModLoaders.title"
+        description="Title of multiple mod loaders feature">
+        Multiple Mod Loaders
+      </Translate>
+    ),
     Svg: require('@site/static/img/undraw_abstract_re_l9xy.svg').default,
     description: (
-      <>
+      <Translate
+        id="homepage.features.multipleModLoaders.description"
+        description="Description of multiple mod loaders feature">
         Support Fabric and NeoForge currently, will add Spigot support in the near future.
-      </>
+      </Translate>
     ),
   },
   {
-    title: 'Multiple AI Platforms',
+    title: (
+      <Translate
+        id="homepage.features.multipleAiPlatforms.title"
+        description="Title of multiple AI platforms feature">
+        Multiple AI Platforms
+      </Translate>
+    ),
     Svg: require('@site/static/img/undraw_chat_bot_re_e2gj.svg').default,
     description: (
-      <>
+      <Translate
+        id="homepage.features.multipleAiPlatforms.description"
+        description="Description of multiple AI platforms feature">
         Support Cloudflare and OpenAI, also OpenAI-compatible platforms that use the same request and response format as OpenAI's.
-      </>
+      </Translate>
     ),
   },
 ];

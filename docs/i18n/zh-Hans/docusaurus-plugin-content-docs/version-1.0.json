@@ -1,0 +1,10 @@
+{
+  "version.label": {
+    "message": "1.0",
+    "description": "The label for version 1.0"
+  },
+  "sidebar.docsSidebar.category.Configuration": {
+    "message": "配置",
+    "description": "The label for category Configuration in sidebar docsSidebar"
+  }
+}
