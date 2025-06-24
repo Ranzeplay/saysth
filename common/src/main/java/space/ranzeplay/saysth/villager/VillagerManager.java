@@ -32,7 +32,7 @@ public class VillagerManager {
                 newName,
                 newPersonality,
                 villager.getVillagerData().profession().value().name().getString(),
-                villager.getVillagerData().type().value().toString(),
+                villager.getVillagerData().type().getRegisteredName(),
                 new HashMap<>());
     }
 
