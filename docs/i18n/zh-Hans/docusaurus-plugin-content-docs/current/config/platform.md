@@ -1,5 +1,10 @@
 # 平台特定配置
 
+以下是SaySomething支持的不同平台的配置。
+您需要选择其中一个来使用。
+
+配置文件是配置目录中的 `saysth/api-config.json`。
+
 ## Cloudflare
 
 ```json

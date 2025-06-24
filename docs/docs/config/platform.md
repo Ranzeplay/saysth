@@ -1,5 +1,10 @@
 # Platform-specific config
 
+The following is the configuration for different platforms supported by SaySomething.
+You need to choose one of them to use.
+
+The configuration file is `saysth/api-config.json` in the config directory.
+
 ## Cloudflare
 
 ```json
