@@ -1,5 +1,6 @@
 package space.ranzeplay.saysth.chat;
 
+import com.google.gson.annotations.SerializedName;
 import lombok.Getter;
 
 public class Message {
@@ -8,8 +9,10 @@ public class Message {
         this.content = content;
     }
 
+    @SerializedName("role")
     private final String role;
     @Getter
+    @SerializedName("content")
     private String content;
 
     public ChatRole getRole() {
