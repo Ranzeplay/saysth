@@ -2,6 +2,7 @@ package space.ranzeplay.saysth;
 
 import org.slf4j.Logger;
 import space.ranzeplay.saysth.config.ConfigManager;
+import space.ranzeplay.saysth.debug.ConsoleConversationHandler;
 import space.ranzeplay.saysth.villager.VillagerManager;
 
 import java.io.IOException;
@@ -12,6 +13,7 @@ public final class Main {
 
     public static ConfigManager CONFIG_MANAGER;
     public static VillagerManager VILLAGER_MANAGER;
+    public static ConsoleConversationHandler CONSOLE_HANDLER;
 
     public static Logger LOGGER;
 
@@ -27,5 +29,6 @@ public final class Main {
         }
 
         VILLAGER_MANAGER = new VillagerManager();
+        CONSOLE_HANDLER = new ConsoleConversationHandler();
     }
 }
