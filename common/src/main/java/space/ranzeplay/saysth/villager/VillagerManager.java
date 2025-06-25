@@ -60,6 +60,9 @@ public class VillagerManager {
         final var conversation = memory.getConversation(player.getUUID());
         conversation.addMessage(new Message(ChatRole.USER, message));
 
+        // Log conversation for debugging purposes
+        Main.LOGGER.info("Conversation with villager (before post) {}: {}", villager.getUUID(), conversation);
+
         // Push system messages including villager's trades and character description
         // Villager character will be on the top of the conversation
         // Villager trades will be the second message
@@ -78,6 +81,9 @@ public class VillagerManager {
         // Remove system messages
         conversation.messages.removeFirst();
         conversation.messages.removeFirst();
+
+        // Log conversation for debugging purposes
+        Main.LOGGER.info("Conversation with villager (after post) {}: {}", villager.getUUID(), conversation);
 
         finalMemory.updateConversation(player.getUUID(), conversation);
 

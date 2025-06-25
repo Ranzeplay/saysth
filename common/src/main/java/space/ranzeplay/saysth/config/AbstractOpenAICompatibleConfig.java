@@ -35,14 +35,18 @@ public abstract class AbstractOpenAICompatibleConfig implements IApiEndpointConf
     @Override
     public Optional<String> sendConversationAndGetResponseText(Conversation conversation) {
         var gson = new Gson();
+        var openAIConversation = new OpenAIConversation(modelName, conversation.messages);
+        var conversationJson = gson.toJson(openAIConversation);
+        Main.LOGGER.info("Sending conversation to OpenAI-compatible endpoint: {}", conversationJson);
         var request = getPartialHttpRequest()
-                .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(new OpenAIConversation(modelName, conversation.messages))))
+                .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(conversationJson)))
                 .build();
 
 
         HttpResponse<String> response;
         try {
             response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+            Main.LOGGER.info("Received response from OpenAI-compatible endpoint: [{}] {}", response.statusCode(), response.body());
         } catch (IOException | InterruptedException e) {
             Main.LOGGER.error("Failed to send conversation: {}", e.getMessage());
             return Optional.empty();
