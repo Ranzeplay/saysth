@@ -61,18 +61,25 @@ public class VillagerManager {
         conversation.addMessage(new Message(ChatRole.USER, message));
 
         // Log conversation for debugging purposes
-        Main.LOGGER.info("Conversation with villager (before post) {}: {}", villager.getUUID(), conversation);
+        Main.LOGGER.debug("Conversation with villager (before post) {}: {}", villager.getUUID(), conversation);
 
         // Push system messages including villager's trades and character description
         // Villager character will be on the top of the conversation
         // Villager trades will be the second message
         conversation.messages.addFirst(new Message(ChatRole.SYSTEM, formatVillagerTrades(villager)));
-        conversation.messages.addFirst(new Message(ChatRole.SYSTEM, memory.getCharacter()));
-
         final var promptMap = Main.CONFIG_MANAGER.getProfessionSpecificPrompts();
-        if(promptMap.keySet().stream().anyMatch(p -> p.equalsIgnoreCase(villager.getVillagerData().profession().value().name().getString()))) {
-            conversation.addMessage(new Message(ChatRole.SYSTEM, promptMap.get(villager.getVillagerData().profession().value().name().getString())));
+        final var profession = villager.getVillagerData().profession().value().name().getString();
+        String matchedKey = promptMap.keySet().stream()
+                .filter(p -> p.equalsIgnoreCase(profession))
+                .findFirst()
+                .orElse(null);
+        if(matchedKey != null) {
+            var specificPrompt = promptMap.get(profession);
+            if (specificPrompt != null && !specificPrompt.isBlank()) {
+                conversation.messages.addFirst(new Message(ChatRole.SYSTEM, specificPrompt));
+            }
         }
+        conversation.messages.addFirst(new Message(ChatRole.SYSTEM, memory.getCharacter()));
 
         final var response = Main.CONFIG_MANAGER.getApiConfig().sendConversationAndGetResponseText(conversation);
         VillagerMemory finalMemory = memory;
@@ -83,7 +90,7 @@ public class VillagerManager {
         conversation.messages.removeFirst();
 
         // Log conversation for debugging purposes
-        Main.LOGGER.info("Conversation with villager (after post) {}: {}", villager.getUUID(), conversation);
+        Main.LOGGER.debug("Conversation with villager (after post) {}: {}", villager.getUUID(), conversation);
 
         finalMemory.updateConversation(player.getUUID(), conversation);
 
