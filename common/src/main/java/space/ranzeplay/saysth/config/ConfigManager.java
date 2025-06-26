@@ -100,11 +100,16 @@ public class ConfigManager {
             while (entries.hasMoreElements()) {
                 var entry = entries.nextElement();
                 if (entry.getName().startsWith("assets/professions/") && entry.getName().endsWith(".txt")) {
-                    var targetFile = getProfessionPath().resolve(entry.getName().substring("assets/professions/".length())).toFile();
+                    var targetPath = getProfessionPath().resolve(entry.getName().substring("assets/professions/".length())).normalize();
+                    if (!targetPath.startsWith(getProfessionPath())) {
+                        Main.LOGGER.warn("Skipping invalid entry: {}", entry.getName());
+                        continue;
+                    }
+                    var targetFile = targetPath.toFile();
                     if (!targetFile.exists()) {
                         var stream = getClass().getResourceAsStream("/" + entry.getName());
                         assert stream != null;
-                        Files.copy(stream, targetFile.toPath());
+                        Files.copy(stream, targetPath);
                         stream.close();
                     }
                 }
