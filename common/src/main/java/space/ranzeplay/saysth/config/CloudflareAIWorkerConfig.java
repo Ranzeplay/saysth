@@ -31,10 +31,10 @@ public class CloudflareAIWorkerConfig implements IApiEndpointConfig {
 
     @Override
     public Optional<String> sendConversationAndGetResponseText(Conversation conversation) {
-        Main.LOGGER.info("Using Cloudflare AI Worker model: {}", modelName);
+        Main.LOGGER.debug("Using Cloudflare AI Worker model: {}", modelName);
         var gson = new Gson();
         var conversationJson = gson.toJson(conversation);
-        Main.LOGGER.info("Sending conversation to Cloudflare AI Worker: {}", conversationJson);
+        Main.LOGGER.debug("Sending conversation to Cloudflare AI Worker: {}", conversationJson);
         var request = getPartialHttpRequest()
                 .POST(HttpRequest.BodyPublishers.ofString(conversationJson))
                 .build();
@@ -42,7 +42,7 @@ public class CloudflareAIWorkerConfig implements IApiEndpointConfig {
         HttpResponse<String> response;
         try {
             response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
-            Main.LOGGER.info("Received response from Cloudflare AI Worker: [{}] {}", response.statusCode(), response.body());
+            Main.LOGGER.debug("Received response from Cloudflare AI Worker: [{}] {}", response.statusCode(), response.body());
         } catch (IOException | InterruptedException e) {
             Main.LOGGER.error("Failed to send conversation: {}", e.getMessage());
             return Optional.empty();
