@@ -74,7 +74,7 @@ public class VillagerManager {
                 .findFirst()
                 .orElse(null);
         if(matchedKey != null) {
-            var specificPrompt = promptMap.get(profession);
+            var specificPrompt = promptMap.get(matchedKey);
             if (specificPrompt != null && !specificPrompt.isBlank()) {
                 conversation.messages.addFirst(new Message(ChatRole.SYSTEM, specificPrompt));
             }
