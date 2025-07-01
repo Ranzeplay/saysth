@@ -1,0 +1,31 @@
+# GitHub Actions Firewall Configuration
+# This file specifies which domains should be allowed through the firewall
+# for building and testing the Minecraft mod project
+
+# Essential Maven Repositories for Minecraft Mod Development
+maven_repositories:
+  - maven.fabricmc.net      # Fabric mod loader dependencies
+  - maven.architectury.dev  # Architectury API dependencies  
+  - maven.neoforged.net     # NeoForge dependencies
+  - repo1.maven.org         # Maven Central repository
+
+# Fabric-specific domains
+fabric:
+  - fabricmc.net            # Fabric main site and metadata
+
+# Gradle build system dependencies
+gradle:
+  - plugins.gradle.org      # Gradle plugins repository
+  - services.gradle.org     # Gradle services and tooling
+
+# Minecraft and Mojang dependencies
+minecraft:
+  - piston-meta.mojang.com  # Minecraft version metadata
+  - piston-data.mojang.com  # Minecraft game data
+  - libraries.minecraft.net # Minecraft runtime libraries
+
+# Additional common dependencies that may be needed
+additional:
+  - repo.spongepowered.org  # Sponge/Mixin dependencies
+  - jcenter.bintray.com     # Legacy JCenter (if needed)
+  - oss.sonatype.org        # Sonatype OSS repository

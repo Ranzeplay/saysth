@@ -29,6 +29,17 @@ jobs:
         with:
           java-version: ${{ matrix.java }}
           distribution: 'zulu'
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-home-cache-cleanup: true
+      - name: Test Maven Repository Connectivity
+        run: |
+          echo "Testing connectivity to required Maven repositories..."
+          curl -f -s --connect-timeout 10 https://maven.fabricmc.net/ > /dev/null && echo "✓ Fabric Maven accessible" || echo "✗ Fabric Maven access blocked"
+          curl -f -s --connect-timeout 10 https://maven.neoforged.net/ > /dev/null && echo "✓ NeoForge Maven accessible" || echo "✗ NeoForge Maven access blocked"  
+          curl -f -s --connect-timeout 10 https://repo1.maven.org/maven2/ > /dev/null && echo "✓ Maven Central accessible" || echo "✗ Maven Central access blocked"
+          curl -f -s --connect-timeout 10 https://maven.architectury.dev/ > /dev/null && echo "✓ Architectury Maven accessible" || echo "✗ Architectury Maven access blocked"
       - name: Make gradle wrapper executable
         if: ${{ runner.os != 'Windows' }}
         run: chmod +x ./gradlew
