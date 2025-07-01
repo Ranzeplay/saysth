@@ -39,8 +39,14 @@ jobs:
         continue-on-error: true
         run: |
           echo "Testing connectivity to required Maven repositories..."
+          # Cross-platform null device detection
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            NULL_DEVICE="nul"
+          else
+            NULL_DEVICE="/dev/null"
+          fi
           test_url() {
-            if curl -f -s --connect-timeout 10 "$1" > /dev/null 2>&1; then
+            if curl -f -s --connect-timeout 10 "$1" > "$NULL_DEVICE" 2>&1; then
               echo "✓ $2 accessible"
             else
               echo "✗ $2 access blocked"
