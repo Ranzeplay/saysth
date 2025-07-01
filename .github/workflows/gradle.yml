@@ -17,7 +17,7 @@ jobs:
           21,    # Current Java LTS & minimum supported by Minecraft
         ]
         # and run on both Linux and Windows
-        os: [ubuntu-24.04, windows-2022]
+        os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
@@ -28,18 +28,28 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: ${{ matrix.java }}
-          distribution: 'zulu'
+          distribution: 'temurin'
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-home-cache-cleanup: true
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
       - name: Test Maven Repository Connectivity
+        shell: bash
+        continue-on-error: true
         run: |
           echo "Testing connectivity to required Maven repositories..."
-          curl -f -s --connect-timeout 10 https://maven.fabricmc.net/ > /dev/null && echo "✓ Fabric Maven accessible" || echo "✗ Fabric Maven access blocked"
-          curl -f -s --connect-timeout 10 https://maven.neoforged.net/ > /dev/null && echo "✓ NeoForge Maven accessible" || echo "✗ NeoForge Maven access blocked"  
-          curl -f -s --connect-timeout 10 https://repo1.maven.org/maven2/ > /dev/null && echo "✓ Maven Central accessible" || echo "✗ Maven Central access blocked"
-          curl -f -s --connect-timeout 10 https://maven.architectury.dev/ > /dev/null && echo "✓ Architectury Maven accessible" || echo "✗ Architectury Maven access blocked"
+          test_url() {
+            if curl -f -s --connect-timeout 10 "$1" > /dev/null 2>&1; then
+              echo "✓ $2 accessible"
+            else
+              echo "✗ $2 access blocked"
+            fi
+          }
+          test_url "https://maven.fabricmc.net/" "Fabric Maven"
+          test_url "https://maven.neoforged.net/" "NeoForge Maven"
+          test_url "https://repo1.maven.org/maven2/" "Maven Central"
+          test_url "https://maven.architectury.dev/" "Architectury Maven"
       - name: Make gradle wrapper executable
         if: ${{ runner.os != 'Windows' }}
         run: chmod +x ./gradlew
