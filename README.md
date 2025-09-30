@@ -3,6 +3,7 @@
 ![Modrinth Downloads](https://img.shields.io/modrinth/dt/say-something)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/ranzeplay/saysth)
 ![GitHub contributors](https://img.shields.io/github/contributors/ranzeplay/saysth)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Ranzeplay/saysth)
 
 A Minecraft Mod that connects villagers to remote AI models.
 
