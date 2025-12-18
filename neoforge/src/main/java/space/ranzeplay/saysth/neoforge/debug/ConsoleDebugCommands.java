@@ -6,6 +6,8 @@ import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.permissions.Permission;
+import net.minecraft.server.permissions.PermissionLevel;
 import space.ranzeplay.saysth.Main;
 
 /**
@@ -15,7 +17,7 @@ public class ConsoleDebugCommands {
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("saysth-debug")
-            .requires(source -> source.hasPermission(4)) // Require OP level 4 (server console/admin)
+            .requires(source -> source.permissions().hasPermission(new Permission.HasCommandLevel(PermissionLevel.ADMINS))) // Require OP level 4 (server console/admin)
             .then(Commands.literal("chat")
                 .then(Commands.argument("message", StringArgumentType.greedyString())
                     .executes(ConsoleDebugCommands::handleChat)
@@ -43,7 +45,7 @@ public class ConsoleDebugCommands {
 
         // Also register a simple chat command using the villager prefix
         dispatcher.register(Commands.literal("saysth-chat")
-            .requires(source -> source.hasPermission(4))
+            .requires(source -> source.permissions().hasPermission(new Permission.HasCommandLevel(PermissionLevel.ADMINS)))
             .then(Commands.argument("message", StringArgumentType.greedyString())
                 .executes(ConsoleDebugCommands::handleDirectChat)
             )

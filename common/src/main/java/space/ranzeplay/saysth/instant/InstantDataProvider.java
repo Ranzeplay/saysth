@@ -1,7 +1,7 @@
 package space.ranzeplay.saysth.instant;
 
 import lombok.AllArgsConstructor;
-import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.trading.MerchantOffers;
 

@@ -1,7 +1,7 @@
 package space.ranzeplay.saysth.villager;
 
 import com.google.gson.Gson;
-import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.entity.player.Player;
 import space.ranzeplay.saysth.Main;
 import space.ranzeplay.saysth.chat.ChatRole;
