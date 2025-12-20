@@ -12,8 +12,6 @@ import java.io.IOException;
 import java.util.*;
 
 public class VillagerManager {
-    private static final String LLM_CONCLUDE_PROMPT = "Conclude the following paragraphs into one complete paragraph concisely using English.";
-
     private static VillagerMemory generateRandomVillagerMemory(Villager villager) {
         final var random = new Random();
         final var nameCandidates = Main.CONFIG_MANAGER.getConfig().getNameCandidates();
@@ -95,7 +93,8 @@ public class VillagerManager {
         finalMemory.updateConversation(player.getUUID(), conversation);
 
         // Conclude memory if it's going to too large
-        if (conversation.messages.size() > Main.CONFIG_MANAGER.getConfig().getConclusionMessageLimit()) {
+        final var messageLimit = Main.CONFIG_MANAGER.getConfig().getConclusionMessageLimit();
+        if (conversation.messages.size() > messageLimit && messageLimit > 0) {
             memory = concludeMemory(memory, player.getUUID());
         }
 
@@ -108,10 +107,10 @@ public class VillagerManager {
         return Main.CONFIG_MANAGER.isVillagerFileExists(villagerId);
     }
 
-    public VillagerMemory concludeMemory(VillagerMemory villager, UUID playerId) {
+    public VillagerMemory concludeMemory(VillagerMemory villager, UUID playerId) throws IOException {
         var gson = new Gson();
         var model = new Conversation(new ArrayList<>());
-        model.addMessage(new Message(ChatRole.SYSTEM, LLM_CONCLUDE_PROMPT));
+        model.addMessage(new Message(ChatRole.SYSTEM, Main.CONFIG_MANAGER.getConclusionPromptTemplate()));
         model.addMessage(new Message(ChatRole.USER, gson.toJson(villager.getConversation(playerId))));
         final var conclusion = Main.CONFIG_MANAGER.getApiConfig().sendConversationAndGetResponseText(model);
         conclusion.ifPresent(m -> {

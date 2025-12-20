@@ -48,6 +48,10 @@ public class ConfigManager {
         return configDirectoryPath.resolve("villager-character-template.txt");
     }
 
+    private Path getConclusionPromptTemplatePath() {
+        return configDirectoryPath.resolve("conclusion-prompt-template.txt");
+    }
+
     private Path getApiConfigFilePath() {
         return configDirectoryPath.resolve("api-config.json");
     }
@@ -55,19 +59,26 @@ public class ConfigManager {
     public void createConfigIfNotExists() throws IOException, URISyntaxException {
         if (!configDirectoryPath.toFile().exists()) {
             Main.LOGGER.info("Creating config directory");
-            configDirectoryPath.toFile().mkdirs();
+            if (configDirectoryPath.toFile().mkdirs()) {
+                Main.LOGGER.info("Config directory created");
+            } else {
+                Main.LOGGER.error("Failed to create config directory");
+            }
         }
 
         if (!getConfigFilePath().toFile().exists()) {
             Main.LOGGER.info("Creating config file");
-            getConfigFilePath().toFile().createNewFile();
+            if (getConfigFilePath().toFile().createNewFile()) {
+                Main.LOGGER.info("Config file has been created");
+            } else {
+                Main.LOGGER.error("Config file already exists");
+            }
 
             var defaultConfig = new SaySthConfig();
             var gson = new GsonBuilder().setPrettyPrinting().create();
-            gson.toJson(defaultConfig, defaultConfig.getClass());
 
             final var writer = new FileWriter(getConfigFilePath().toFile());
-            writer.write(gson.toJson(defaultConfig));
+            writer.write(gson.toJson(defaultConfig, defaultConfig.getClass()));
             writer.close();
         }
 
@@ -77,11 +88,27 @@ public class ConfigManager {
             Files.copy(stream, getSystemMessageTemplatePath());
 
             stream.close();
+
+            Main.LOGGER.info("System message template file has been created");
+        }
+
+        if (!getConclusionPromptTemplatePath().toFile().exists()) {
+            var stream = getClass().getResourceAsStream("/assets/conclusion-prompt-template.txt");
+            assert stream != null;
+            Files.copy(stream, getConclusionPromptTemplatePath());
+
+            stream.close();
+
+            Main.LOGGER.info("Conclusion prompt template has been created");
         }
 
         if (!getProfessionPath().toFile().exists()) {
             Main.LOGGER.info("Creating profession directory");
-            getProfessionPath().toFile().mkdirs();
+            if (getProfessionPath().toFile().mkdirs()) {
+                Main.LOGGER.info("Profession directory created");
+            } else {
+                Main.LOGGER.error("Failed to create profession directory");
+            }
         }
         var professions = getClass().getResource("/assets/professions");
         assert professions != null;
@@ -121,12 +148,20 @@ public class ConfigManager {
 
         if (!getVillagerMemoryPath().toFile().exists()) {
             Main.LOGGER.info("Creating villager memory directory");
-            getVillagerMemoryPath().toFile().mkdirs();
+            if (getVillagerMemoryPath().toFile().mkdirs()) {
+                Main.LOGGER.info("Villager memory directory created");
+            } else {
+                Main.LOGGER.error("Failed to create villager memory directory");
+            }
         }
 
         if (!getApiConfigFilePath().toFile().exists()) {
             Main.LOGGER.info("Creating API config file");
-            getApiConfigFilePath().toFile().createNewFile();
+            if (getApiConfigFilePath().toFile().createNewFile()) {
+                Main.LOGGER.info("API config file has been created");
+            } else {
+                Main.LOGGER.error("Failed to create API config file");
+            }
             var defaultConfig = new CloudflareAIWorkerConfig();
             var gson = new GsonBuilder().setPrettyPrinting().create();
 
@@ -150,7 +185,9 @@ public class ConfigManager {
 
     public VillagerMemory getVillager(@NotNull UUID uuid) throws IOException {
         final var filePath = getVillagerMemoryPath().resolve(uuid + ".json").toFile();
-        filePath.createNewFile();
+        if(!filePath.createNewFile()) {
+            Main.LOGGER.warn("Failed to create memory for villager {}",  uuid);
+        }
 
         final var reader = new FileReader(filePath);
         final var gson = new Gson();
@@ -174,6 +211,10 @@ public class ConfigManager {
 
     public String getSystemMessageTemplate() throws IOException {
         return Files.readString(getSystemMessageTemplatePath());
+    }
+
+    public String getConclusionPromptTemplate() throws IOException {
+        return Files.readString(getConclusionPromptTemplatePath());
     }
 
     private void loadApiConfig() throws IOException {
