@@ -37,6 +37,14 @@ Refer to [Platform-specific config](./platform.md) for more information about th
 
 :::
 
+:::tip
+
+Set `conclusionMessageLimit` to 0 to disable chat message conclusion.
+
+Customize conclusion prompt in `saysth/conclusion-prompt-template.txt`
+
+:::
+
 ## Remark
 
 For NeoForge and Fabric, the config directory is `config/saysth` relative to the game jar file.
