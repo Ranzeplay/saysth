@@ -1,0 +1,10 @@
+{
+  "version.label": {
+    "message": "下一版本",
+    "description": "The label for version current"
+  },
+  "sidebar.docsSidebar.category.Configuration": {
+    "message": "配置",
+    "description": "The label for category Configuration in sidebar docsSidebar"
+  }
+}
