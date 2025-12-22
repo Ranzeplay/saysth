@@ -30,6 +30,7 @@ public abstract class AbstractOpenAICompatibleConfig implements IApiEndpointConf
                 .uri(URI.create(getChatCompletionEndpoint()))
                 .header("Content-Type", "application/json")
                 .header("Authorization", authCredentials)
+                .version(HttpClient.Version.HTTP_1_1)
                 .timeout(Duration.ofSeconds(Main.CONFIG_MANAGER.getConfig().getTimeoutSeconds()));
     }
 
@@ -40,7 +41,7 @@ public abstract class AbstractOpenAICompatibleConfig implements IApiEndpointConf
         var conversationJson = gson.toJson(openAIConversation);
         Main.LOGGER.debug("Sending conversation to OpenAI-compatible endpoint: {}", conversationJson);
         var request = getPartialHttpRequest()
-                .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(conversationJson)))
+                .POST(HttpRequest.BodyPublishers.ofString(conversationJson))
                 .build();
 
 
