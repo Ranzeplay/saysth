@@ -2,6 +2,17 @@
 
 ## [vNext](/docs/next/intro)
 
+## [v1.1.1-f1](/docs/intro)
+
+| Game version / Mod loader | Fabric                                                                                              | NeoForge                                                                                              |
+|---------------------------|-----------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------|
+| 1.21.1                    | [Download](https://github.com/Ranzeplay/saysth/releases/download/v1.1.1-f1/saysth-fabric-1.1.1+1.21.1.jar) | [Download](https://github.com/Ranzeplay/saysth/releases/download/v1.1.1-f1/saysth-neoforge-1.1.1+1.21.1.jar) |
+| 1.21.11                   | [Download](https://github.com/Ranzeplay/saysth/releases/download/v1.1.1-f1/saysth-fabric-1.1.1+1.21.11.jar) | [Download](https://github.com/Ranzeplay/saysth/releases/download/v1.1.1-f1/saysth-neoforge-1.1.1+1.21.11.jar) |
+
+Source: [Ranzeplay/saysth at v1.1.1-f1](https://github.com/Ranzeplay/saysth/tree/v1.1.1-f1)
+
+Release notes: [Release SaySomething v1.1.1-f1](https://github.com/Ranzeplay/saysth/releases/tag/v1.1.1-f1)
+
 ## [v1.1.1](/docs/intro)
 
 | Game version / Mod loader | Fabric                                                                                              | NeoForge                                                                                              |
