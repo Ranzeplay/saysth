@@ -16,6 +16,6 @@ public class Message {
     private String content;
 
     public ChatRole getRole() {
-        return ChatRole.valueOf(role);
+        return ChatRole.fromString(role);
     }
 }

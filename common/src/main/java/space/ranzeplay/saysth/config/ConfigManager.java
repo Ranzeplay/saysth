@@ -185,7 +185,7 @@ public class ConfigManager {
 
     public VillagerMemory getVillager(@NotNull UUID uuid) throws IOException {
         final var filePath = getVillagerMemoryPath().resolve(uuid + ".json").toFile();
-        if(!filePath.createNewFile()) {
+        if(!filePath.exists() && !filePath.createNewFile()) {
             Main.LOGGER.warn("Failed to create memory for villager {}",  uuid);
         }
 
@@ -199,7 +199,7 @@ public class ConfigManager {
 
     public void updateVillager(@NotNull VillagerMemory villager) throws IOException {
         final var targetFile = getVillagerMemoryPath().resolve(villager.getId().toString() + ".json").toFile();
-        final var writer = new FileWriter(targetFile);
+        final var writer = new FileWriter(targetFile, false);
         var gson = new GsonBuilder().setPrettyPrinting().create();
         writer.write(gson.toJson(villager));
         writer.close();
