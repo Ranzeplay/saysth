@@ -6,8 +6,10 @@ import space.ranzeplay.saysth.chat.Conversation;
 import space.ranzeplay.saysth.chat.Message;
 import space.ranzeplay.saysth.villager.VillagerMemory;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -18,6 +20,7 @@ public class ConsoleConversationHandler {
     private static final UUID DEBUG_VILLAGER_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
     private static final UUID CONSOLE_PLAYER_ID = UUID.fromString("00000000-0000-0000-0000-000000000002");
     private static final String DEBUG_VILLAGER_NAME = "Debug Villager";
+    private static final int DEBUG_SYSTEM_MESSAGE_COUNT = 2; // Character and debug info
     
     private VillagerMemory debugVillager;
     private boolean initialized = false;
@@ -164,7 +167,7 @@ public class ConsoleConversationHandler {
 
     private void removeSystemMessagesFromConversation(Conversation conversation) {
         int removedCount = 0;
-        for (int i = 0; i < 2 && !conversation.messages.isEmpty(); i++) {
+        for (int i = 0; i < DEBUG_SYSTEM_MESSAGE_COUNT && !conversation.messages.isEmpty(); i++) {
             if (conversation.messages.getFirst().getRole() == ChatRole.SYSTEM) {
                 conversation.messages.removeFirst();
                 removedCount++;
