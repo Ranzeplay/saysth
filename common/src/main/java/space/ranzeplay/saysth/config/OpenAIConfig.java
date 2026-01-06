@@ -8,6 +8,9 @@ public class OpenAIConfig extends AbstractOpenAICompatibleConfig {
 
     @Override
     String buildAuthCredentials() {
+        if (authCredentials == null || authCredentials.trim().isEmpty()) {
+            throw new IllegalStateException("Auth credentials cannot be null or empty");
+        }
         return authCredentials.startsWith("Bearer ") ? authCredentials : "Bearer " + authCredentials;
     }
 }

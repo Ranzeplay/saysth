@@ -18,6 +18,13 @@ public final class Main {
     public static Logger LOGGER;
 
     public static void init(Path configDir, Logger logger){
+        if (logger == null) {
+            throw new IllegalArgumentException("Logger cannot be null");
+        }
+        if (configDir == null) {
+            throw new IllegalArgumentException("Config directory cannot be null");
+        }
+        
         LOGGER = logger;
 
         CONFIG_MANAGER = new ConfigManager(configDir);
@@ -25,7 +32,7 @@ public final class Main {
             CONFIG_MANAGER.createConfigIfNotExists();
             CONFIG_MANAGER.loadConfig();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Failed to initialize configuration", e);
         }
 
         VILLAGER_MANAGER = new VillagerManager();

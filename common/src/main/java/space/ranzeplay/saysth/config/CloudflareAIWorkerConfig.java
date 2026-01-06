@@ -31,6 +31,11 @@ public class CloudflareAIWorkerConfig implements IApiEndpointConfig {
 
     @Override
     public Optional<String> sendConversationAndGetResponseText(Conversation conversation) {
+        if (conversation == null || conversation.messages == null || conversation.messages.isEmpty()) {
+            Main.LOGGER.warn("Cannot send empty conversation");
+            return Optional.empty();
+        }
+        
         Main.LOGGER.debug("Using Cloudflare AI Worker model: {}", modelName);
         var gson = new Gson();
         var conversationJson = gson.toJson(conversation);
@@ -45,6 +50,9 @@ public class CloudflareAIWorkerConfig implements IApiEndpointConfig {
             Main.LOGGER.debug("Received response from Cloudflare AI Worker: [{}] {}", response.statusCode(), response.body());
         } catch (IOException | InterruptedException e) {
             Main.LOGGER.error("Failed to send conversation: {}", e.getMessage());
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt(); // Restore interrupted status
+            }
             return Optional.empty();
         }
 
@@ -53,12 +61,23 @@ public class CloudflareAIWorkerConfig implements IApiEndpointConfig {
             return Optional.empty();
         }
 
-        var responseBody = gson.fromJson(response.body(), JsonObject.class);
-        return Optional.of(responseBody
-                .get("result")
-                .getAsJsonObject()
-                .get("response")
-                .getAsString()
-        );
+        try {
+            var responseBody = gson.fromJson(response.body(), JsonObject.class);
+            if (responseBody == null || !responseBody.has("result")) {
+                Main.LOGGER.error("Invalid response format: missing 'result' field");
+                return Optional.empty();
+            }
+            
+            var result = responseBody.get("result").getAsJsonObject();
+            if (!result.has("response")) {
+                Main.LOGGER.error("Invalid response format: missing 'response' field in result");
+                return Optional.empty();
+            }
+            
+            return Optional.of(result.get("response").getAsString());
+        } catch (Exception e) {
+            Main.LOGGER.error("Failed to parse Cloudflare response: {}", e.getMessage());
+            return Optional.empty();
+        }
     }
 }
