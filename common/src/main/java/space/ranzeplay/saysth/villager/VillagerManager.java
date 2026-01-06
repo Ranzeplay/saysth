@@ -78,45 +78,66 @@ public class VillagerManager {
             return Optional.empty();
         }
         
+        var memory = getOrCreateVillagerMemory(villager, player);
+        final var conversation = memory.getConversation(player.getUUID());
+        conversation.addMessage(new Message(ChatRole.USER, message));
+
+        Main.LOGGER.debug("Conversation with villager (before post) {}: {}", villager.getUUID(), conversation);
+
+        int systemMessagesAdded = addSystemMessagesToConversation(conversation, villager, memory);
+        final var response = Main.CONFIG_MANAGER.getApiConfig().sendConversationAndGetResponseText(conversation);
+        response.ifPresent(m -> conversation.addMessage(new Message(ChatRole.ASSISTANT, m)));
+
+        removeSystemMessages(conversation, systemMessagesAdded);
+        Main.LOGGER.debug("Conversation with villager (after post) {}: {}", villager.getUUID(), conversation);
+
+        memory.updateConversation(player.getUUID(), conversation);
+        memory = concludeMemoryIfNeeded(memory, player.getUUID(), conversation);
+        this.updateVillager(memory);
+
+        return response;
+    }
+
+    private VillagerMemory getOrCreateVillagerMemory(Villager villager, Player player) throws IOException {
         var memory = Main.CONFIG_MANAGER.getVillager(villager.getUUID());
         if (!memory.conversations.containsKey(player.getUUID())) {
             memory.addConversation(player.getUUID());
         }
-        final var conversation = memory.getConversation(player.getUUID());
-        conversation.addMessage(new Message(ChatRole.USER, message));
+        return memory;
+    }
 
-        // Log conversation for debugging purposes
-        Main.LOGGER.debug("Conversation with villager (before post) {}: {}", villager.getUUID(), conversation);
-
+    private int addSystemMessagesToConversation(Conversation conversation, Villager villager, VillagerMemory memory) {
         // Push system messages including villager's trades and character description
-        // Villager character will be on the top of the conversation
-        // Villager trades will be the second message
+        // Order: character (first), profession-specific prompt (optional), trades
         conversation.messages.addFirst(new Message(ChatRole.SYSTEM, formatVillagerTrades(villager)));
+        int systemMessagesAdded = 1;
+
+        String professionPrompt = getProfessionSpecificPrompt(villager);
+        if (professionPrompt != null && !professionPrompt.isBlank()) {
+            conversation.messages.addFirst(new Message(ChatRole.SYSTEM, professionPrompt));
+            systemMessagesAdded++;
+        }
+
+        conversation.messages.addFirst(new Message(ChatRole.SYSTEM, memory.getCharacter()));
+        systemMessagesAdded++;
+
+        return systemMessagesAdded;
+    }
+
+    private String getProfessionSpecificPrompt(Villager villager) {
         final var promptMap = Main.CONFIG_MANAGER.getProfessionSpecificPrompts();
         final var profession = villager.getVillagerData().profession().value().name().getString();
+        
         String matchedKey = promptMap.keySet().stream()
                 .filter(p -> p.equalsIgnoreCase(profession))
                 .findFirst()
                 .orElse(null);
-        if(matchedKey != null) {
-            var specificPrompt = promptMap.get(matchedKey);
-            if (specificPrompt != null && !specificPrompt.isBlank()) {
-                conversation.messages.addFirst(new Message(ChatRole.SYSTEM, specificPrompt));
-            }
-        }
-        conversation.messages.addFirst(new Message(ChatRole.SYSTEM, memory.getCharacter()));
-
-        final var response = Main.CONFIG_MANAGER.getApiConfig().sendConversationAndGetResponseText(conversation);
-        VillagerMemory finalMemory = memory;
-        response.ifPresent(m -> conversation.addMessage(new Message(ChatRole.ASSISTANT, m)));
-
-        // Remove system messages
-        // Handle case where system messages might have already been removed
-        int systemMessagesToRemove = 2; // Default: character and trades
-        if (matchedKey != null && promptMap.get(matchedKey) != null && !promptMap.get(matchedKey).isBlank()) {
-            systemMessagesToRemove = 3; // character, specific prompt, and trades
-        }
         
+        return matchedKey != null ? promptMap.get(matchedKey) : null;
+    }
+
+    private void removeSystemMessages(Conversation conversation, int systemMessagesToRemove) {
+        // Remove system messages that were temporarily added
         for (int i = 0; i < systemMessagesToRemove && !conversation.messages.isEmpty(); i++) {
             if (conversation.messages.getFirst().getRole() == ChatRole.SYSTEM) {
                 conversation.messages.removeFirst();
@@ -124,21 +145,14 @@ public class VillagerManager {
                 break; // Stop if we encounter a non-system message
             }
         }
+    }
 
-        // Log conversation for debugging purposes
-        Main.LOGGER.debug("Conversation with villager (after post) {}: {}", villager.getUUID(), conversation);
-
-        finalMemory.updateConversation(player.getUUID(), conversation);
-
-        // Conclude memory if it's going to too large
+    private VillagerMemory concludeMemoryIfNeeded(VillagerMemory memory, UUID playerId, Conversation conversation) throws IOException {
         final var messageLimit = Main.CONFIG_MANAGER.getConfig().getConclusionMessageLimit();
         if (conversation.messages.size() > messageLimit && messageLimit > 0) {
-            memory = concludeMemory(memory, player.getUUID());
+            return concludeMemory(memory, playerId);
         }
-
-        this.updateVillager(memory);
-
-        return response;
+        return memory;
     }
 
     public boolean hasVillager(UUID villagerId) {
