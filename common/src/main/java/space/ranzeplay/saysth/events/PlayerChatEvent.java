@@ -66,7 +66,9 @@ public class PlayerChatEvent {
     private static void performAIChat(ServerPlayer player, String message, Villager villager) {
         if (player == null || villager == null || message == null) {
             Main.LOGGER.warn("Null parameter in performAIChat - player: {}, villager: {}, message: {}", 
-                player != null, villager != null, message != null);
+                player == null ? "null" : "present", 
+                villager == null ? "null" : "present", 
+                message == null ? "null" : "present");
             return;
         }
         
@@ -98,7 +100,7 @@ public class PlayerChatEvent {
                 }, () -> {
                     Main.LOGGER.warn("Failed to get response from villager {}", memory.getName());
                     player.sendSystemMessage(Component
-                            .literal(String.format("<(Villager) %s> Failed to response.", memory.getName()))
+                            .literal(String.format("<(Villager) %s> Failed to respond.", memory.getName()))
                             .setStyle(Style.EMPTY.withColor(TextColor.fromLegacyFormat(ChatFormatting.RED)))
                     );
                 });
