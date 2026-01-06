@@ -16,23 +16,52 @@ import java.util.concurrent.TimeUnit;
 
 public class PlayerChatEvent {
     public static void onPlayerChat(ServerPlayer player, String message) throws IOException {
-        if (!message.startsWith(Main.CONFIG_MANAGER.getConfig().getVillagerChatPrefix())) return;
+        if (player == null) {
+            Main.LOGGER.warn("Player is null in chat event");
+            return;
+        }
+        if (message == null || message.trim().isEmpty()) {
+            return;
+        }
+        
+        String chatPrefix = Main.CONFIG_MANAGER.getConfig().getVillagerChatPrefix();
+        if (chatPrefix == null || !message.startsWith(chatPrefix)) {
+            return;
+        }
 
         final var nearbyVillagers = getNearbyVillagers(player);
+        if (nearbyVillagers == null || nearbyVillagers.isEmpty()) {
+            return;
+        }
 
         for (final var villager : nearbyVillagers) {
+            if (villager == null) {
+                continue;
+            }
             final var memory = Main.VILLAGER_MANAGER.getVillager(villager);
-            villager.setCustomName(Component.literal(memory.getName()));
+            if (memory != null && memory.getName() != null) {
+                villager.setCustomName(Component.literal(memory.getName()));
+            }
 
             performAIChat(player, message, villager);
         }
     }
 
     private static void performAIChat(ServerPlayer player, String message, Villager villager) {
+        if (player == null || villager == null || message == null) {
+            Main.LOGGER.warn("Null parameter in performAIChat");
+            return;
+        }
+        
         new Thread(() -> {
             var stopwatch = StopWatch.createStarted();
             try {
                 var memory = Main.VILLAGER_MANAGER.getVillager(villager);
+                if (memory == null) {
+                    Main.LOGGER.warn("Failed to get villager memory");
+                    return;
+                }
+                
                 var response = Main.VILLAGER_MANAGER.sendMessageToVillager(villager, player, message);
                 response.ifPresentOrElse(responseMessage -> {
                     if (!responseMessage.equals("IGN")) {
@@ -47,7 +76,9 @@ public class PlayerChatEvent {
                             .setStyle(Style.EMPTY.withColor(TextColor.fromLegacyFormat(ChatFormatting.RED)))
                 ));
             } catch (IOException e) {
-                Main.LOGGER.warn(e.getMessage());
+                Main.LOGGER.error("Error during AI chat: {}", e.getMessage(), e);
+            } catch (Exception e) {
+                Main.LOGGER.error("Unexpected error during AI chat: {}", e.getMessage(), e);
             }
             stopwatch.stop();
 
@@ -58,10 +89,19 @@ public class PlayerChatEvent {
     }
 
     private static List<Villager> getNearbyVillagers(ServerPlayer player) {
-        final var look = player.getLookAngle();
-        final var position = player.getEyePosition().add(look.scale(4));
-        final var posA = position.add(-5, -5, -5);
-        final var posB = position.add(5, 5, 5);
-        return player.level().getEntitiesOfClass(Villager.class, new AABB(posA, posB));
+        if (player == null || player.level() == null) {
+            return List.of();
+        }
+        
+        try {
+            final var look = player.getLookAngle();
+            final var position = player.getEyePosition().add(look.scale(4));
+            final var posA = position.add(-5, -5, -5);
+            final var posB = position.add(5, 5, 5);
+            return player.level().getEntitiesOfClass(Villager.class, new AABB(posA, posB));
+        } catch (Exception e) {
+            Main.LOGGER.error("Error getting nearby villagers: {}", e.getMessage());
+            return List.of();
+        }
     }
 }

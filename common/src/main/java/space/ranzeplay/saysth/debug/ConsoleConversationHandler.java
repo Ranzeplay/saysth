@@ -65,13 +65,17 @@ public class ConsoleConversationHandler {
      * @return The villager's response, or null if input doesn't match chat prefix
      */
     public String handleConsoleInput(String input) {
+        if (input == null || input.trim().isEmpty()) {
+            return null;
+        }
+        
         if (!initialized) {
             initialize();
         }
 
         // Check if input starts with villager chat prefix
         String prefix = Main.CONFIG_MANAGER.getConfig().getVillagerChatPrefix();
-        if (!input.startsWith(prefix)) {
+        if (prefix == null || !input.startsWith(prefix)) {
             return null;
         }
 
@@ -102,14 +106,19 @@ public class ConsoleConversationHandler {
                 conversation.addMessage(new Message(ChatRole.ASSISTANT, responseText));
                 
                 // Remove system messages to keep conversation clean
-                conversation.messages.removeFirst();
-                conversation.messages.removeFirst();
+                if (!conversation.messages.isEmpty() && conversation.messages.getFirst().getRole() == ChatRole.SYSTEM) {
+                    conversation.messages.removeFirst();
+                }
+                if (!conversation.messages.isEmpty() && conversation.messages.getFirst().getRole() == ChatRole.SYSTEM) {
+                    conversation.messages.removeFirst();
+                }
                 
                 // Update conversation in memory
                 debugVillager.updateConversation(CONSOLE_PLAYER_ID, conversation);
                 
                 // Check if conversation needs to be concluded
-                if (conversation.messages.size() > Main.CONFIG_MANAGER.getConfig().getConclusionMessageLimit()) {
+                int messageLimit = Main.CONFIG_MANAGER.getConfig().getConclusionMessageLimit();
+                if (messageLimit > 0 && conversation.messages.size() > messageLimit) {
                     Main.LOGGER.info("Debug conversation reached message limit, concluding...");
                     debugVillager = Main.VILLAGER_MANAGER.concludeMemory(debugVillager, CONSOLE_PLAYER_ID);
                 }

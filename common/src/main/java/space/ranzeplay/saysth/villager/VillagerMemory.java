@@ -23,6 +23,9 @@ public class VillagerMemory {
     HashMap<UUID, Conversation> conversations;
 
     public void addConversation(UUID playerId) {
+        if (playerId == null) {
+            throw new IllegalArgumentException("Player ID cannot be null");
+        }
         conversations.put(playerId, new Conversation(new ArrayList<>()));
     }
 
@@ -39,6 +42,10 @@ public class VillagerMemory {
     }
 
     public Conversation getConversation(UUID playerId) {
+        if (playerId == null) {
+            throw new IllegalArgumentException("Player ID cannot be null");
+        }
+        
         if(!conversations.containsKey(playerId)) {
             conversations.put(playerId, new Conversation(new ArrayList<>()));
         }
@@ -47,6 +54,12 @@ public class VillagerMemory {
     }
 
     public void updateConversation(UUID playerId, Conversation conversation) {
+        if (playerId == null) {
+            throw new IllegalArgumentException("Player ID cannot be null");
+        }
+        if (conversation == null) {
+            throw new IllegalArgumentException("Conversation cannot be null");
+        }
         conversations.replace(playerId, conversation);
     }
 }
