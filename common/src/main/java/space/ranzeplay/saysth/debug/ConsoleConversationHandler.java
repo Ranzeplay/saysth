@@ -55,8 +55,12 @@ public class ConsoleConversationHandler {
         initialized = true;
         
         Main.LOGGER.info("Console conversation handler initialized with villager: {}", name);
-        Main.LOGGER.info("Use '{}' prefix in console to chat with the debug villager", 
-                        Main.CONFIG_MANAGER.getConfig().getVillagerChatPrefix());
+        String prefix = Main.CONFIG_MANAGER.getConfig().getVillagerChatPrefix();
+        if (prefix != null && !prefix.isEmpty()) {
+            Main.LOGGER.info("Use '{}' prefix in console to chat with the debug villager", prefix);
+        } else {
+            Main.LOGGER.info("No prefix configured - all console input will be processed by the debug villager");
+        }
     }
 
     /**
@@ -66,52 +70,76 @@ public class ConsoleConversationHandler {
      */
     public String handleConsoleInput(String input) {
         if (input == null || input.trim().isEmpty()) {
+            Main.LOGGER.debug("Received null or empty console input");
             return null;
         }
         
         if (!initialized) {
+            Main.LOGGER.info("Console conversation handler not initialized, initializing now");
             initialize();
         }
 
         // Check if input starts with villager chat prefix
         String prefix = Main.CONFIG_MANAGER.getConfig().getVillagerChatPrefix();
-        if (prefix == null || !input.startsWith(prefix)) {
-            return null;
+        
+        // If prefix is null or empty, match everything (no prefix required)
+        // Otherwise, only match messages that start with the prefix
+        String message;
+        if (prefix != null && !prefix.isEmpty()) {
+            if (!input.startsWith(prefix)) {
+                Main.LOGGER.debug("Console input does not start with required prefix '{}': {}", prefix, input);
+                return null;
+            }
+            // Remove prefix from message
+            message = input.substring(prefix.length()).trim();
+            Main.LOGGER.debug("Console input matches prefix '{}', extracted message: {}", prefix, message);
+        } else {
+            // No prefix configured, use entire input as message
+            message = input.trim();
+            Main.LOGGER.debug("No prefix configured, using entire input as message");
         }
-
-        // Remove prefix from message
-        String message = input.substring(prefix.length()).trim();
+        
         if (message.isEmpty()) {
+            Main.LOGGER.info("Empty message after prefix removal");
             return "Debug villager is ready to chat! Type a message after the prefix.";
         }
 
         try {
+            Main.LOGGER.debug("Processing console message: {}", message);
             // Get conversation
             Conversation conversation = debugVillager.getConversation(CONSOLE_PLAYER_ID);
             
             // Add user message
             conversation.addMessage(new Message(ChatRole.USER, message));
+            Main.LOGGER.debug("Added user message to conversation, total messages: {}", conversation.messages.size());
             
             // Add system messages (character description first, then debug info)
             conversation.messages.addFirst(new Message(ChatRole.SYSTEM, getDebugSystemMessage()));
             conversation.messages.addFirst(new Message(ChatRole.SYSTEM, debugVillager.getCharacter()));
+            Main.LOGGER.debug("Added system messages to conversation");
             
             // Send to AI and get response
+            Main.LOGGER.info("Sending conversation to AI for debug villager {}", debugVillager.getName());
             var response = Main.CONFIG_MANAGER.getApiConfig().sendConversationAndGetResponseText(conversation);
             
             if (response.isPresent()) {
                 String responseText = response.get();
+                Main.LOGGER.info("Received response from AI: {}", responseText);
                 
                 // Add assistant response to conversation
                 conversation.addMessage(new Message(ChatRole.ASSISTANT, responseText));
                 
                 // Remove system messages to keep conversation clean
+                int removedCount = 0;
                 if (!conversation.messages.isEmpty() && conversation.messages.getFirst().getRole() == ChatRole.SYSTEM) {
                     conversation.messages.removeFirst();
+                    removedCount++;
                 }
                 if (!conversation.messages.isEmpty() && conversation.messages.getFirst().getRole() == ChatRole.SYSTEM) {
                     conversation.messages.removeFirst();
+                    removedCount++;
                 }
+                Main.LOGGER.debug("Removed {} system messages from conversation", removedCount);
                 
                 // Update conversation in memory
                 debugVillager.updateConversation(CONSOLE_PLAYER_ID, conversation);
@@ -119,12 +147,14 @@ public class ConsoleConversationHandler {
                 // Check if conversation needs to be concluded
                 int messageLimit = Main.CONFIG_MANAGER.getConfig().getConclusionMessageLimit();
                 if (messageLimit > 0 && conversation.messages.size() > messageLimit) {
-                    Main.LOGGER.info("Debug conversation reached message limit, concluding...");
+                    Main.LOGGER.info("Debug conversation reached message limit ({}/{}), concluding...", 
+                        conversation.messages.size(), messageLimit);
                     debugVillager = Main.VILLAGER_MANAGER.concludeMemory(debugVillager, CONSOLE_PLAYER_ID);
                 }
                 
                 return String.format("<%s> %s", debugVillager.getName(), responseText);
             } else {
+                Main.LOGGER.warn("Failed to get response from AI for debug villager");
                 return String.format("<%s> [Failed to get response from AI]", debugVillager.getName());
             }
             
