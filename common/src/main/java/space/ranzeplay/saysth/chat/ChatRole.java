@@ -15,4 +15,13 @@ public enum ChatRole {
     public String toString() {
         return this.name;
     }
+
+    public static ChatRole fromString(String value) {
+        for (ChatRole role : ChatRole.values()) {
+            if (role.name.equalsIgnoreCase(value)) {
+                return role;
+            }
+        }
+        throw new IllegalArgumentException("No enum constant for: " + value);
+    }
 }
