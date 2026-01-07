@@ -13,6 +13,10 @@ import java.util.*;
 
 public class VillagerManager {
     private static VillagerMemory generateRandomVillagerMemory(Villager villager) {
+        if (villager == null) {
+            throw new IllegalArgumentException("Villager cannot be null");
+        }
+        
         final var random = new Random();
         final var nameCandidates = Main.CONFIG_MANAGER.getConfig().getNameCandidates();
         final var personalityCandidates = Main.CONFIG_MANAGER.getConfig().getPersonalities();
@@ -21,10 +25,21 @@ public class VillagerManager {
         if (villager.getCustomName() != null && Main.CONFIG_MANAGER.getConfig().isUseExistingVillagerName()) {
             newName = villager.getCustomName().getString();
         } else {
-            newName = nameCandidates[random.nextInt(0, nameCandidates.length)];
+            if (nameCandidates == null || nameCandidates.length == 0) {
+                newName = "Villager";
+                Main.LOGGER.warn("No name candidates found in config, using default name");
+            } else {
+                newName = nameCandidates[random.nextInt(nameCandidates.length)];
+            }
         }
 
-        final var newPersonality = personalityCandidates[random.nextInt(0, personalityCandidates.length)];
+        String newPersonality;
+        if (personalityCandidates == null || personalityCandidates.length == 0) {
+            newPersonality = "friendly";
+            Main.LOGGER.warn("No personality candidates found in config, using default personality");
+        } else {
+            newPersonality = personalityCandidates[random.nextInt(personalityCandidates.length)];
+        }
 
         return new VillagerMemory(villager.getUUID(),
                 newName,
@@ -35,6 +50,10 @@ public class VillagerManager {
     }
 
     public VillagerMemory getVillager(Villager villager) throws IOException {
+        if (villager == null) {
+            throw new IllegalArgumentException("Villager cannot be null");
+        }
+        
         final VillagerMemory memory;
         if (!hasVillager(villager.getUUID())) {
             memory = generateRandomVillagerMemory(villager);
@@ -51,63 +70,104 @@ public class VillagerManager {
     }
 
     public Optional<String> sendMessageToVillager(Villager villager, Player player, String message) throws IOException {
-        var memory = Main.CONFIG_MANAGER.getVillager(villager.getUUID());
-        if (!memory.conversations.containsKey(player.getUUID())) {
-            memory.addConversation(player.getUUID());
+        if (villager == null || player == null) {
+            throw new IllegalArgumentException("Villager and player cannot be null");
         }
+        if (message == null || message.trim().isEmpty()) {
+            Main.LOGGER.warn("Received empty message, ignoring");
+            return Optional.empty();
+        }
+        
+        var memory = getOrCreateVillagerMemory(villager, player);
         final var conversation = memory.getConversation(player.getUUID());
         conversation.addMessage(new Message(ChatRole.USER, message));
 
-        // Log conversation for debugging purposes
         Main.LOGGER.debug("Conversation with villager (before post) {}: {}", villager.getUUID(), conversation);
 
-        // Push system messages including villager's trades and character description
-        // Villager character will be on the top of the conversation
-        // Villager trades will be the second message
-        conversation.messages.addFirst(new Message(ChatRole.SYSTEM, formatVillagerTrades(villager)));
-        final var promptMap = Main.CONFIG_MANAGER.getProfessionSpecificPrompts();
-        final var profession = villager.getVillagerData().profession().value().name().getString();
-        String matchedKey = promptMap.keySet().stream()
-                .filter(p -> p.equalsIgnoreCase(profession))
-                .findFirst()
-                .orElse(null);
-        if(matchedKey != null) {
-            var specificPrompt = promptMap.get(matchedKey);
-            if (specificPrompt != null && !specificPrompt.isBlank()) {
-                conversation.messages.addFirst(new Message(ChatRole.SYSTEM, specificPrompt));
-            }
-        }
-        conversation.messages.addFirst(new Message(ChatRole.SYSTEM, memory.getCharacter()));
-
+        int systemMessagesAdded = addSystemMessagesToConversation(conversation, villager, memory);
         final var response = Main.CONFIG_MANAGER.getApiConfig().sendConversationAndGetResponseText(conversation);
-        VillagerMemory finalMemory = memory;
         response.ifPresent(m -> conversation.addMessage(new Message(ChatRole.ASSISTANT, m)));
 
-        // Remove system messages
-        conversation.messages.removeFirst();
-        conversation.messages.removeFirst();
-
-        // Log conversation for debugging purposes
+        removeSystemMessages(conversation, systemMessagesAdded);
         Main.LOGGER.debug("Conversation with villager (after post) {}: {}", villager.getUUID(), conversation);
 
-        finalMemory.updateConversation(player.getUUID(), conversation);
-
-        // Conclude memory if it's going to too large
-        final var messageLimit = Main.CONFIG_MANAGER.getConfig().getConclusionMessageLimit();
-        if (conversation.messages.size() > messageLimit && messageLimit > 0) {
-            memory = concludeMemory(memory, player.getUUID());
-        }
-
+        memory.updateConversation(player.getUUID(), conversation);
+        memory = concludeMemoryIfNeeded(memory, player.getUUID(), conversation);
         this.updateVillager(memory);
 
         return response;
     }
 
+    private VillagerMemory getOrCreateVillagerMemory(Villager villager, Player player) throws IOException {
+        var memory = Main.CONFIG_MANAGER.getVillager(villager.getUUID());
+        if (!memory.conversations.containsKey(player.getUUID())) {
+            memory.addConversation(player.getUUID());
+        }
+        return memory;
+    }
+
+    private int addSystemMessagesToConversation(Conversation conversation, Villager villager, VillagerMemory memory) {
+        // Push system messages including villager's trades and character description
+        // Order: character (first), profession-specific prompt (optional), trades
+        conversation.messages.addFirst(new Message(ChatRole.SYSTEM, formatVillagerTrades(villager)));
+        int systemMessagesAdded = 1;
+
+        String professionPrompt = getProfessionSpecificPrompt(villager);
+        if (professionPrompt != null && !professionPrompt.isBlank()) {
+            conversation.messages.addFirst(new Message(ChatRole.SYSTEM, professionPrompt));
+            systemMessagesAdded++;
+        }
+
+        conversation.messages.addFirst(new Message(ChatRole.SYSTEM, memory.getCharacter()));
+        systemMessagesAdded++;
+
+        return systemMessagesAdded;
+    }
+
+    private String getProfessionSpecificPrompt(Villager villager) {
+        final var promptMap = Main.CONFIG_MANAGER.getProfessionSpecificPrompts();
+        final var profession = villager.getVillagerData().profession().value().name().getString();
+        
+        String matchedKey = promptMap.keySet().stream()
+                .filter(p -> p.equalsIgnoreCase(profession))
+                .findFirst()
+                .orElse(null);
+        
+        return matchedKey != null ? promptMap.get(matchedKey) : null;
+    }
+
+    private void removeSystemMessages(Conversation conversation, int systemMessagesToRemove) {
+        // Remove system messages that were temporarily added
+        for (int i = 0; i < systemMessagesToRemove && !conversation.messages.isEmpty(); i++) {
+            if (conversation.messages.getFirst().getRole() == ChatRole.SYSTEM) {
+                conversation.messages.removeFirst();
+            } else {
+                break; // Stop if we encounter a non-system message
+            }
+        }
+    }
+
+    private VillagerMemory concludeMemoryIfNeeded(VillagerMemory memory, UUID playerId, Conversation conversation) throws IOException {
+        final var messageLimit = Main.CONFIG_MANAGER.getConfig().getConclusionMessageLimit();
+        if (conversation.messages.size() > messageLimit && messageLimit > 0) {
+            return concludeMemory(memory, playerId);
+        }
+        return memory;
+    }
+
     public boolean hasVillager(UUID villagerId) {
+        if (villagerId == null) {
+            Main.LOGGER.warn("Attempted to check for villager with null UUID");
+            return false;
+        }
         return Main.CONFIG_MANAGER.isVillagerFileExists(villagerId);
     }
 
     public VillagerMemory concludeMemory(VillagerMemory villager, UUID playerId) throws IOException {
+        if (villager == null || playerId == null) {
+            throw new IllegalArgumentException("Villager and playerId cannot be null");
+        }
+        
         var gson = new Gson();
         var model = new Conversation(new ArrayList<>());
         model.addMessage(new Message(ChatRole.SYSTEM, Main.CONFIG_MANAGER.getConclusionPromptTemplate()));
@@ -123,8 +183,12 @@ public class VillagerManager {
     }
 
     public String formatVillagerTrades(Villager villager) {
+        if (villager == null) {
+            return "You don't have any information about trades.";
+        }
+        
         var trades = villager.getOffers();
-        if (trades.isEmpty()) {
+        if (trades == null || trades.isEmpty()) {
             return "You don't sell anything for now.";
         }
 
@@ -132,6 +196,11 @@ public class VillagerManager {
         formattedTrades.add("You ONLY have the following trades:");
 
         for (var trade : trades) {
+            if (trade == null || trade.getCostA() == null || trade.getResult() == null) {
+                Main.LOGGER.warn("Encountered null or incomplete trade, skipping");
+                continue;
+            }
+            
             StringBuilder formattedTrade = new StringBuilder();
 
             formattedTrade.append("- ")
@@ -139,7 +208,7 @@ public class VillagerManager {
                     .append("x ")
                     .append(trade.getCostA().getHoverName().getString().toLowerCase());
 
-            if (!trade.getCostB().isEmpty()) {
+            if (trade.getCostB() != null && !trade.getCostB().isEmpty()) {
                 formattedTrade.append(" and ")
                         .append(trade.getCostB().getCount())
                         .append("x ")

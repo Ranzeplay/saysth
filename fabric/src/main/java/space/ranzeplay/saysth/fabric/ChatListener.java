@@ -11,10 +11,14 @@ import java.io.IOException;
 public class ChatListener implements ServerMessageEvents.ChatMessage {
     @Override
     public void onChatMessage(PlayerChatMessage playerChatMessage, ServerPlayer serverPlayer, ChatType.Bound bound) {
+        if (playerChatMessage == null || serverPlayer == null) {
+            return;
+        }
+        
         try {
             PlayerChatEvent.onPlayerChat(serverPlayer, playerChatMessage.signedContent());
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Failed to handle player chat", e);
         }
     }
 }

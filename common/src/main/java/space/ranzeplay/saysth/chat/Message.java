@@ -5,6 +5,12 @@ import lombok.Getter;
 
 public class Message {
     public Message(ChatRole role, String content) {
+        if (role == null) {
+            throw new IllegalArgumentException("Role cannot be null");
+        }
+        if (content == null) {
+            throw new IllegalArgumentException("Content cannot be null");
+        }
         this.role = role.toString();
         this.content = content;
     }
