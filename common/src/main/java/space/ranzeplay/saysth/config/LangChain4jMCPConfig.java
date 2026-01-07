@@ -55,7 +55,7 @@ public class LangChain4jMCPConfig implements IApiEndpointConfig {
         // This method is not used by LangChain4j integration
         // Return a no-op builder for interface compatibility
         return HttpRequest.newBuilder()
-                .uri(java.net.URI.create("http://localhost"))
+                .uri(java.net.URI.create("http://not-used.localhost"))
                 .header("Content-Type", "application/json");
     }
 
