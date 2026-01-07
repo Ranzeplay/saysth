@@ -101,17 +101,20 @@ public class LangChain4jMCPConfig implements IApiEndpointConfig {
             List<ChatMessage> langChainMessages = convertMessages(conversation.messages);
             
             // Log MCP plugin status
+            // Note: Full MCP tool integration with function calling requires AI Services setup
+            // This provides the foundation - developers can extend with custom AI Service implementations
             if (Boolean.TRUE.equals(enableMcpTools)) {
                 McpPluginRegistry registry = McpPluginRegistry.getInstance();
                 List<ToolSpecification> tools = registry.getAllTools();
                 
                 if (!tools.isEmpty()) {
-                    Main.LOGGER.debug("LangChain4j MCP: {} tool(s) available from {} plugin(s)", 
+                    Main.LOGGER.info("LangChain4j MCP: {} tool(s) available from {} plugin(s)", 
                             tools.size(), registry.getPluginNames().size());
                     Main.LOGGER.debug("LangChain4j MCP: Available tools: {}", 
                             tools.stream().map(ToolSpecification::name).toList());
+                    Main.LOGGER.debug("LangChain4j MCP: Tool integration requires AI Services - see documentation for implementation details");
                 } else {
-                    Main.LOGGER.debug("LangChain4j MCP: No tools available from plugins");
+                    Main.LOGGER.debug("LangChain4j MCP: No tools registered");
                 }
             }
             

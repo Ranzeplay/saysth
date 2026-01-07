@@ -60,7 +60,8 @@ This integration uses LangChain4j's unified interface to communicate with langua
     "modelName": "gpt-3.5-turbo",
     "baseUrl": "https://api.openai.com/v1",
     "temperature": 0.7,
-    "maxTokens": 1000
+    "maxTokens": 1000,
+    "enableMcpTools": true
 }
 ```
 
@@ -74,4 +75,8 @@ This integration uses LangChain4j's unified interface to communicate with langua
 
 - `maxTokens`: (Optional) Maximum number of tokens to generate in the response.
 
+- `enableMcpTools`: (Optional) Enable MCP plugin tools. Defaults to `true`. See MCP Plugin Development Guide for creating custom plugins.
+
 **Note**: To use this platform, set `apiConfigPlatform` to `"langchain4j-mcp"` in your `config.json` file.
+
+**MCP Plugin Development**: See `docs/MCP_PLUGIN_DEVELOPMENT.md` for a comprehensive guide on creating custom MCP server plugins.

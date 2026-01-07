@@ -573,6 +573,46 @@ public class DataStoragePlugin implements McpServerPlugin {
 3. Check for exceptions in the logs
 4. Ensure tool names match exactly (case-sensitive)
 
+## Tool Integration with AI Models
+
+### Current Implementation
+
+The current SDK provides the foundation for MCP tool integration. Tools are registered and available through the `McpPluginRegistry`, but are not automatically invoked by the AI model during conversations.
+
+### Future Implementation
+
+Full tool integration with automatic AI invocation requires implementing LangChain4j's AI Services pattern. This is a more advanced topic that involves:
+
+1. **Creating an AI Service Interface**:
+```java
+public interface VillagerAI {
+    @SystemMessage("You are a helpful villager assistant.")
+    String chat(@UserMessage String message);
+}
+```
+
+2. **Registering Tools with the Service**:
+```java
+VillagerAI ai = AiServices.builder(VillagerAI.class)
+    .chatLanguageModel(model)
+    .tools(registry.getAllTools())
+    .toolExecutor(new McpToolExecutor(registry))
+    .build();
+```
+
+3. **Implementing Tool Execution**:
+The `McpToolExecutor` would route tool calls to the appropriate plugin through the registry.
+
+### Current Usage
+
+Developers can:
+- Register plugins and tools
+- Access tools programmatically through `McpPluginRegistry`
+- Execute tools manually for custom integrations
+- Use the SDK as a foundation for building custom AI service implementations
+
+For production tool integration, consider extending `LangChain4jMCPConfig` with a custom implementation that uses AI Services.
+
 ## Additional Resources
 
 - [LangChain4j Documentation](https://docs.langchain4j.dev/)

@@ -60,7 +60,8 @@
     "modelName": "gpt-3.5-turbo",
     "baseUrl": "https://api.openai.com/v1",
     "temperature": 0.7,
-    "maxTokens": 1000
+    "maxTokens": 1000,
+    "enableMcpTools": true
 }
 ```
 
@@ -74,4 +75,8 @@
 
 - `maxTokens`：（可选）响应中生成的最大令牌数。
 
+- `enableMcpTools`：（可选）启用MCP插件工具。默认为 `true`。有关创建自定义插件的信息，请参阅MCP插件开发指南。
+
 **注意**：要使用此平台，请在 `config.json` 文件中将 `apiConfigPlatform` 设置为 `"langchain4j-mcp"`。
+
+**MCP插件开发**：有关创建自定义MCP服务器插件的综合指南，请参阅 `docs/MCP_PLUGIN_DEVELOPMENT.md`。
