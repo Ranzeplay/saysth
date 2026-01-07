@@ -6,6 +6,7 @@ import dev.langchain4j.data.message.SystemMessage;
 import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.model.chat.ChatLanguageModel;
 import dev.langchain4j.model.openai.OpenAiChatModel;
+import dev.langchain4j.model.output.Response;
 import lombok.Data;
 import space.ranzeplay.saysth.Main;
 import space.ranzeplay.saysth.chat.ChatRole;
@@ -52,8 +53,10 @@ public class LangChain4jMCPConfig implements IApiEndpointConfig {
     @Override
     public HttpRequest.Builder getPartialHttpRequest() {
         // This method is not used by LangChain4j integration
-        // Return a dummy builder for interface compatibility
-        throw new UnsupportedOperationException("LangChain4j integration does not use HttpRequest.Builder");
+        // Return a no-op builder for interface compatibility
+        return HttpRequest.newBuilder()
+                .uri(java.net.URI.create("http://localhost"))
+                .header("Content-Type", "application/json");
     }
 
     @Override
@@ -72,14 +75,14 @@ public class LangChain4jMCPConfig implements IApiEndpointConfig {
             
             // Generate response
             Main.LOGGER.debug("Sending conversation to LangChain4j chat model");
-            dev.langchain4j.data.message.AiMessage response = chatModel.generate(langChainMessages).content();
+            dev.langchain4j.model.output.Response<AiMessage> response = chatModel.generate(langChainMessages);
             
-            String responseText = response.text();
+            String responseText = response.content().text();
             Main.LOGGER.debug("Received response from LangChain4j: {}", responseText);
             
             return Optional.of(responseText);
         } catch (Exception e) {
-            Main.LOGGER.error("Failed to send conversation via LangChain4j: {}", e.getMessage());
+            Main.LOGGER.error("Failed to send conversation via LangChain4j", e);
             return Optional.empty();
         }
     }
