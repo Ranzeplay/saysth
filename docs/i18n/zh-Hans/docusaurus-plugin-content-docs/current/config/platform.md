@@ -49,3 +49,29 @@
 - `modelName`：您使用的模型名称。
 
 - `chatCompletionEndpoint`：用于POST消息的URL。如果您使用LM Studio，可以使用 `http://localhost:<port>/v1/chat/completion`，其中 `port` 是LM Studio监听的端口。
+
+## LangChain4j with MCP
+
+此集成使用LangChain4j的统一接口与语言模型通信，并支持模型上下文协议（MCP）以增强工具集成。
+
+```json
+{
+    "apiKey": "xxx-xxx-xxx",
+    "modelName": "gpt-3.5-turbo",
+    "baseUrl": "https://api.openai.com/v1",
+    "temperature": 0.7,
+    "maxTokens": 1000
+}
+```
+
+- `apiKey`：用于与LLM提供商进行身份验证的API密钥。
+
+- `modelName`：要使用的模型名称（例如，"gpt-4"、"gpt-3.5-turbo"）。
+
+- `baseUrl`：（可选）API端点的基础URL。如果未指定，则默认为OpenAI的端点。使用此选项连接到与OpenAI兼容的服务。
+
+- `temperature`：（可选）控制响应的随机性（0.0至2.0）。值越高，输出越随机。默认为模型的默认值。
+
+- `maxTokens`：（可选）响应中生成的最大令牌数。
+
+**注意**：要使用此平台，请在 `config.json` 文件中将 `apiConfigPlatform` 设置为 `"langchain4j-mcp"`。
