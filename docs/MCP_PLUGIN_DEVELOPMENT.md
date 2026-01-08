@@ -244,6 +244,154 @@ public List<McpPrompt> getPrompts() {
 }
 ```
 
+## Data Deserialization
+
+The SDK provides powerful utilities for deserializing tool arguments from the generic `Map<String, Object>` into strongly-typed objects.
+
+### Manual Deserialization with ToolArgumentsDeserializer
+
+The `ToolArgumentsDeserializer` class provides convenient methods for extracting and converting arguments:
+
+```java
+@Override
+public String executeTool(String toolName, Map<String, Object> arguments) {
+    if ("calculate".equals(toolName)) {
+        // Validate required arguments
+        ToolArgumentsDeserializer.requireArguments(arguments, "operation", "a", "b");
+        
+        // Extract with type safety
+        String operation = ToolArgumentsDeserializer.getString(arguments, "operation", "add");
+        double a = ToolArgumentsDeserializer.getDouble(arguments, "a", 0.0);
+        double b = ToolArgumentsDeserializer.getDouble(arguments, "b", 0.0);
+        
+        // Use the values
+        return performCalculation(operation, a, b);
+    }
+    return null;
+}
+```
+
+**Available Methods:**
+- `getString(args, key, default)` - Extract string with default
+- `getRequiredString(args, key)` - Extract required string
+- `getInt(args, key, default)` - Extract integer
+- `getLong(args, key, default)` - Extract long
+- `getDouble(args, key, default)` - Extract double
+- `getBoolean(args, key, default)` - Extract boolean
+- `getList(args, key, elementType)` - Extract typed list
+- `getObject(args, key, targetType)` - Deserialize complex object
+- `requireArgument(args, key)` - Validate single required argument
+- `requireArguments(args, keys...)` - Validate multiple required arguments
+
+### Schema-Based Deserialization
+
+For complex argument structures, use `@ToolArgument` annotations with `ToolArgumentsSchema`:
+
+**1. Define a schema class:**
+
+```java
+public class CreateUserRequest {
+    @ToolArgument(name = "username", required = true, 
+                  description = "The username")
+    private String username;
+    
+    @ToolArgument(name = "email", required = true, 
+                  description = "User email address")
+    private String email;
+    
+    @ToolArgument(name = "age", required = false, 
+                  description = "User age", defaultValue = "18")
+    private int age = 18;
+    
+    @ToolArgument(name = "isAdmin", required = false, 
+                  description = "Whether user is admin", defaultValue = "false")
+    private boolean isAdmin = false;
+    
+    // Getters
+    public String getUsername() { return username; }
+    public String getEmail() { return email; }
+    public int getAge() { return age; }
+    public boolean isAdmin() { return isAdmin; }
+}
+```
+
+**2. Use the schema in executeTool:**
+
+```java
+@Override
+public String executeTool(String toolName, Map<String, Object> arguments) {
+    if ("create_user".equals(toolName)) {
+        // Automatic deserialization with validation
+        CreateUserRequest request = ToolArgumentsSchema.deserialize(
+            arguments, 
+            CreateUserRequest.class
+        );
+        
+        // Use the strongly-typed object
+        return String.format("Created user: %s (%s), age %d, admin: %s",
+            request.getUsername(),
+            request.getEmail(),
+            request.getAge(),
+            request.isAdmin()
+        );
+    }
+    return null;
+}
+```
+
+**Benefits:**
+- Automatic validation of required fields
+- Type conversion with proper error handling
+- Default value application
+- Clear schema documentation
+- Reduced boilerplate code
+
+### List Deserialization
+
+Extract typed lists from arguments:
+
+```java
+@Override
+public String executeTool(String toolName, Map<String, Object> arguments) {
+    if ("process_items".equals(toolName)) {
+        // Extract list with type safety
+        List<String> items = ToolArgumentsDeserializer.getList(
+            arguments, 
+            "items", 
+            String.class
+        );
+        
+        return "Processed " + items.size() + " items";
+    }
+    return null;
+}
+```
+
+### Custom Conversion
+
+For special conversion logic, use `getWithConverter`:
+
+```java
+@Override
+public String executeTool(String toolName, Map<String, Object> arguments) {
+    if ("set_date".equals(toolName)) {
+        LocalDate date = ToolArgumentsDeserializer.getWithConverter(
+            arguments,
+            "date",
+            value -> LocalDate.parse(value.toString()),
+            LocalDate.now()
+        );
+        
+        return "Date set to: " + date;
+    }
+    return null;
+}
+```
+
+### Complete Example
+
+See `ExampleDataPlugin` in the SDK for a complete demonstration of all deserialization features.
+
 ## Best Practices
 
 ### 1. Tool Design

@@ -32,6 +32,18 @@
  * <p>Represents a conversation template that can guide interactions between
  * players and villagers.</p>
  * 
+ * <h3>{@link space.ranzeplay.saysth.mcp.ToolArgumentsDeserializer}</h3>
+ * <p>Utility class for extracting and converting tool arguments from the generic
+ * Map into strongly-typed values with validation and type safety.</p>
+ * 
+ * <h3>{@link space.ranzeplay.saysth.mcp.ToolArgumentsSchema}</h3>
+ * <p>Schema-based deserializer that automatically converts tool arguments into
+ * annotated objects using {@link space.ranzeplay.saysth.mcp.ToolArgument} annotations.</p>
+ * 
+ * <h3>{@link space.ranzeplay.saysth.mcp.ToolArgument}</h3>
+ * <p>Annotation for defining tool argument schemas with metadata for validation,
+ * documentation, and default values.</p>
+ * 
  * <h2>Quick Start</h2>
  * 
  * <p>Creating a simple plugin:</p>
