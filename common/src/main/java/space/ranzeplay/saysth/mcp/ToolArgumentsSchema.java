@@ -187,7 +187,7 @@ public class ToolArgumentsSchema {
         // For complex types, use JSON deserialization
         try {
             String json = GSON.toJson(value);
-            T result = GSON.fromJson(json, targetType);
+            Object result = GSON.fromJson(json, targetType);
             if (result != null) {
                 return result;
             }
