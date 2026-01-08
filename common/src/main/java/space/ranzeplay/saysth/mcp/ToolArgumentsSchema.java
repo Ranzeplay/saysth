@@ -145,46 +145,118 @@ public class ToolArgumentsSchema {
         }
         
         // Handle primitive types and their wrappers
-        if (targetType == int.class || targetType == Integer.class) {
-            if (value instanceof Number) {
-                return ((Number) value).intValue();
-            }
-            return Integer.parseInt(value.toString());
+        Object primitiveResult = tryConvertPrimitive(value, targetType);
+        if (primitiveResult != null) {
+            return primitiveResult;
         }
         
-        if (targetType == long.class || targetType == Long.class) {
-            if (value instanceof Number) {
-                return ((Number) value).longValue();
-            }
-            return Long.parseLong(value.toString());
-        }
-        
-        if (targetType == double.class || targetType == Double.class) {
-            if (value instanceof Number) {
-                return ((Number) value).doubleValue();
-            }
-            return Double.parseDouble(value.toString());
-        }
-        
-        if (targetType == float.class || targetType == Float.class) {
-            if (value instanceof Number) {
-                return ((Number) value).floatValue();
-            }
-            return Float.parseFloat(value.toString());
-        }
-        
-        if (targetType == boolean.class || targetType == Boolean.class) {
-            if (value instanceof Boolean) {
-                return value;
-            }
-            return Boolean.parseBoolean(value.toString());
-        }
-        
+        // Handle String conversion
         if (targetType == String.class) {
             return value.toString();
         }
         
         // For complex types, use JSON deserialization
+        Object complexResult = tryConvertComplex(value, targetType);
+        if (complexResult != null) {
+            return complexResult;
+        }
+        
+        // Last resort: throw exception for type mismatch
+        throw new IllegalArgumentException(
+                String.format("Cannot convert value of type %s to %s", 
+                        value.getClass().getSimpleName(), 
+                        targetType.getSimpleName()));
+    }
+    
+    /**
+     * Attempts to convert a value to a primitive type or wrapper.
+     * 
+     * @param value the value to convert
+     * @param targetType the target type
+     * @return converted value or null if not a primitive type
+     */
+    private static Object tryConvertPrimitive(Object value, Class<?> targetType) {
+        if (targetType == int.class || targetType == Integer.class) {
+            return convertToInteger(value);
+        }
+        
+        if (targetType == long.class || targetType == Long.class) {
+            return convertToLong(value);
+        }
+        
+        if (targetType == double.class || targetType == Double.class) {
+            return convertToDouble(value);
+        }
+        
+        if (targetType == float.class || targetType == Float.class) {
+            return convertToFloat(value);
+        }
+        
+        if (targetType == boolean.class || targetType == Boolean.class) {
+            return convertToBoolean(value);
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Converts a value to Integer.
+     */
+    private static Integer convertToInteger(Object value) {
+        if (value instanceof Number) {
+            return ((Number) value).intValue();
+        }
+        return Integer.parseInt(value.toString());
+    }
+    
+    /**
+     * Converts a value to Long.
+     */
+    private static Long convertToLong(Object value) {
+        if (value instanceof Number) {
+            return ((Number) value).longValue();
+        }
+        return Long.parseLong(value.toString());
+    }
+    
+    /**
+     * Converts a value to Double.
+     */
+    private static Double convertToDouble(Object value) {
+        if (value instanceof Number) {
+            return ((Number) value).doubleValue();
+        }
+        return Double.parseDouble(value.toString());
+    }
+    
+    /**
+     * Converts a value to Float.
+     */
+    private static Float convertToFloat(Object value) {
+        if (value instanceof Number) {
+            return ((Number) value).floatValue();
+        }
+        return Float.parseFloat(value.toString());
+    }
+    
+    /**
+     * Converts a value to Boolean.
+     */
+    private static Boolean convertToBoolean(Object value) {
+        if (value instanceof Boolean) {
+            return (Boolean) value;
+        }
+        return Boolean.parseBoolean(value.toString());
+    }
+    
+    /**
+     * Attempts to convert a value to a complex type via JSON deserialization.
+     * 
+     * @param value the value to convert
+     * @param targetType the target type
+     * @return converted value or null if conversion fails
+     */
+    private static Object tryConvertComplex(Object value, Class<?> targetType) {
         try {
             String json = GSON.toJson(value);
             Object result = GSON.fromJson(json, targetType);
@@ -195,11 +267,6 @@ public class ToolArgumentsSchema {
             Main.LOGGER.warn("ToolArgumentsSchema: Failed to convert value to {} via JSON", 
                     targetType.getSimpleName());
         }
-        
-        // Last resort: throw exception for type mismatch
-        throw new IllegalArgumentException(
-                String.format("Cannot convert value of type %s to %s", 
-                        value.getClass().getSimpleName(), 
-                        targetType.getSimpleName()));
+        return null;
     }
 }
