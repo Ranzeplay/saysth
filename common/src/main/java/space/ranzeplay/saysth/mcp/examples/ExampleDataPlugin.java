@@ -6,6 +6,8 @@ import org.jetbrains.annotations.Nullable;
 import space.ranzeplay.saysth.Main;
 import space.ranzeplay.saysth.mcp.*;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -182,8 +184,8 @@ public class ExampleDataPlugin implements McpServerPlugin {
             case "count" -> "Count: " + items.size();
             case "join" -> "Joined: " + String.join(", ", items);
             case "reverse" -> {
-                List<String> reversed = new java.util.ArrayList<>(items);
-                java.util.Collections.reverse(reversed);
+                List<String> reversed = new ArrayList<>(items);
+                Collections.reverse(reversed);
                 yield "Reversed: " + String.join(", ", reversed);
             }
             default -> "Unknown operation: " + operation;

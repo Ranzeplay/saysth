@@ -107,6 +107,23 @@ public class ToolArgumentsSchema {
             
         } catch (IllegalArgumentException e) {
             throw e;
+        } catch (NoSuchMethodException e) {
+            Main.LOGGER.error("ToolArgumentsSchema: {} must have a no-argument constructor", 
+                    schemaClass.getSimpleName());
+            throw new IllegalArgumentException(
+                    schemaClass.getSimpleName() + " must have a public no-argument constructor", e);
+        } catch (IllegalAccessException e) {
+            Main.LOGGER.error("ToolArgumentsSchema: Cannot access constructor of {}", 
+                    schemaClass.getSimpleName());
+            throw new IllegalArgumentException(
+                    "Cannot access constructor of " + schemaClass.getSimpleName() + 
+                    ". Ensure it has a public no-argument constructor.", e);
+        } catch (InstantiationException e) {
+            Main.LOGGER.error("ToolArgumentsSchema: Cannot instantiate {}", 
+                    schemaClass.getSimpleName());
+            throw new IllegalArgumentException(
+                    "Cannot instantiate " + schemaClass.getSimpleName() + 
+                    ". Ensure it is not abstract and has a public no-argument constructor.", e);
         } catch (Exception e) {
             Main.LOGGER.error("ToolArgumentsSchema: Failed to deserialize {}: {}", 
                     schemaClass.getSimpleName(), e.getMessage(), e);
@@ -170,11 +187,19 @@ public class ToolArgumentsSchema {
         // For complex types, use JSON deserialization
         try {
             String json = GSON.toJson(value);
-            return GSON.fromJson(json, targetType);
+            T result = GSON.fromJson(json, targetType);
+            if (result != null) {
+                return result;
+            }
         } catch (Exception e) {
-            Main.LOGGER.warn("ToolArgumentsSchema: Failed to convert value to {}, using toString()", 
+            Main.LOGGER.warn("ToolArgumentsSchema: Failed to convert value to {} via JSON", 
                     targetType.getSimpleName());
-            return value.toString();
         }
+        
+        // Last resort: throw exception for type mismatch
+        throw new IllegalArgumentException(
+                String.format("Cannot convert value of type %s to %s", 
+                        value.getClass().getSimpleName(), 
+                        targetType.getSimpleName()));
     }
 }

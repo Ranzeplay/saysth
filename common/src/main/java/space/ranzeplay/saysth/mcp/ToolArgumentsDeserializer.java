@@ -204,15 +204,27 @@ public class ToolArgumentsDeserializer {
             return List.of();
         }
         
+        // If already a list, validate and convert elements if needed
         if (value instanceof List) {
-            return (List<T>) value;
+            List<?> rawList = (List<?>) value;
+            
+            // Check if all elements are of the correct type
+            boolean allCorrectType = rawList.stream()
+                    .allMatch(item -> item == null || elementType.isInstance(item));
+            
+            if (allCorrectType) {
+                return (List<T>) rawList;
+            }
+            
+            // Need to convert elements - use JSON serialization for safety
         }
         
-        // Try to deserialize from JSON string
+        // Try to deserialize from JSON string for type safety
         try {
             String json = GSON.toJson(value);
             Type listType = com.google.gson.reflect.TypeToken.getParameterized(List.class, elementType).getType();
-            return GSON.fromJson(json, listType);
+            List<T> result = GSON.fromJson(json, listType);
+            return result != null ? result : List.of();
         } catch (Exception e) {
             return List.of();
         }
