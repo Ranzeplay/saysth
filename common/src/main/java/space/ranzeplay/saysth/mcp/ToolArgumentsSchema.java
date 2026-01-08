@@ -201,6 +201,10 @@ public class ToolArgumentsSchema {
     
     /**
      * Converts a value to Integer.
+     * 
+     * @param value the value to convert
+     * @return the converted Integer value
+     * @throws NumberFormatException if the value cannot be parsed as an integer
      */
     private static Integer convertToInteger(Object value) {
         if (value instanceof Number) {
@@ -211,6 +215,10 @@ public class ToolArgumentsSchema {
     
     /**
      * Converts a value to Long.
+     * 
+     * @param value the value to convert
+     * @return the converted Long value
+     * @throws NumberFormatException if the value cannot be parsed as a long
      */
     private static Long convertToLong(Object value) {
         if (value instanceof Number) {
@@ -221,6 +229,10 @@ public class ToolArgumentsSchema {
     
     /**
      * Converts a value to Double.
+     * 
+     * @param value the value to convert
+     * @return the converted Double value
+     * @throws NumberFormatException if the value cannot be parsed as a double
      */
     private static Double convertToDouble(Object value) {
         if (value instanceof Number) {
@@ -231,6 +243,10 @@ public class ToolArgumentsSchema {
     
     /**
      * Converts a value to Float.
+     * 
+     * @param value the value to convert
+     * @return the converted Float value
+     * @throws NumberFormatException if the value cannot be parsed as a float
      */
     private static Float convertToFloat(Object value) {
         if (value instanceof Number) {
@@ -241,6 +257,12 @@ public class ToolArgumentsSchema {
     
     /**
      * Converts a value to Boolean.
+     * 
+     * <p>Note: Boolean.parseBoolean returns true only for the string "true" (case-insensitive),
+     * and false for all other inputs. It never throws exceptions.</p>
+     * 
+     * @param value the value to convert
+     * @return the converted Boolean value
      */
     private static Boolean convertToBoolean(Object value) {
         if (value instanceof Boolean) {
