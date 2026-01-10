@@ -18,6 +18,8 @@ If you already have an account, ignore this section.
 Go to https://dash.cloudflare.com/sign-up and register an account
 by filling the information they need and click "Sign up" button.
 
+![Register page](/img/tutorial/cf-llm/bd702c6d-f541-4476-8768-9e7c54560a2c.webp)
+
 ### 1. Find your Account ID
 
 1. Log in to the [Cloudflare Dashboard](https://dash.cloudflare.com/).
@@ -29,11 +31,19 @@ by filling the information they need and click "Sign up" button.
 1. With account logged in, go to your https://dash.cloudflare.com/profile/api-tokens.
 2. Click **Create Token**.
 3. In **API token templates** sectio, use **Workers AI** template.
+
+![](/img/tutorial/cf-llm/3f502444-a1b9-49a5-a2c5-71be49b41ad7.webp)
+
 4. (Optional) click the pencil icon after *Token name* to rename your token.
 5. In *Account resources* section, select the proper one (e.g. click the dropdown menu and select your account name).
 7. Configure other settings, such as *Client IP Address Filtering* and *TTL*.
-8. Click **Continue to summary** to create your token.
+
+![](/img/tutorial/cf-llm/599f8117-3260-4fa4-839d-8f74b4ce1891.webp)
+
+8. Click **Continue to summary** and **Create Token** to create your token.
 9. Copy the API Token **immediately**. You won't be able to see it again.
+
+![](/img/tutorial/cf-llm/1f31caf4-9fcb-4389-a004-08bfe7e00ab8.webp)
 
 :::warning
 
