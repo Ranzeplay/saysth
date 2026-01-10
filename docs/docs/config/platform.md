@@ -21,6 +21,8 @@ The configuration file is `saysth/api-config.json` in the config directory.
 
 - `apiKey`: An API key issued by your account, must be valid and have permission `Account.Workers AI`.
 
+See [here](/tutorial/cf-llm) for more details.
+
 ## OpenAI
 
 ```json
