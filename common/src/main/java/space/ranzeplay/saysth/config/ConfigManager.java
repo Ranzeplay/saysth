@@ -77,9 +77,9 @@ public class ConfigManager {
             var defaultConfig = new SaySthConfig();
             var gson = new GsonBuilder().setPrettyPrinting().create();
 
-            final var writer = new FileWriter(getConfigFilePath().toFile());
-            writer.write(gson.toJson(defaultConfig, defaultConfig.getClass()));
-            writer.close();
+            try (final var writer = new FileWriter(getConfigFilePath().toFile())) {
+                writer.write(gson.toJson(defaultConfig, defaultConfig.getClass()));
+            }
         }
 
         if (!getSystemMessageTemplatePath().toFile().exists()) {
@@ -165,19 +165,22 @@ public class ConfigManager {
             var defaultConfig = new CloudflareAIWorkerConfig();
             var gson = new GsonBuilder().setPrettyPrinting().create();
 
-            final var writer = new FileWriter(getApiConfigFilePath().toFile());
-            writer.write(gson.toJson(defaultConfig));
-            writer.close();
+            try (final var writer = new FileWriter(getApiConfigFilePath().toFile())) {
+                writer.write(gson.toJson(defaultConfig));
+            }
         }
     }
 
     public void loadConfig() throws IOException {
         Main.LOGGER.info("Loading config");
-        final var reader = new FileReader(getConfigFilePath().toFile());
         final var gson = new Gson();
-        final var config = gson.fromJson(reader, SaySthConfig.class);
-        reader.close();
-        this.config = config;
+        try (final var reader = new FileReader(getConfigFilePath().toFile())) {
+            final var config = gson.fromJson(reader, SaySthConfig.class);
+            if (config == null) {
+                throw new IOException("Config file is empty or invalid");
+            }
+            this.config = config;
+        }
 
         loadApiConfig();
         loadProfessionConfig();
@@ -185,24 +188,26 @@ public class ConfigManager {
 
     public VillagerMemory getVillager(@NotNull UUID uuid) throws IOException {
         final var filePath = getVillagerMemoryPath().resolve(uuid + ".json").toFile();
-        if(!filePath.createNewFile()) {
+        if(!filePath.exists() && !filePath.createNewFile()) {
             Main.LOGGER.warn("Failed to create memory for villager {}",  uuid);
         }
 
-        final var reader = new FileReader(filePath);
         final var gson = new Gson();
-        final var config = gson.fromJson(reader, VillagerMemory.class);
-        reader.close();
-
-        return config;
+        try (final var reader = new FileReader(filePath)) {
+            final var villagerMemory = gson.fromJson(reader, VillagerMemory.class);
+            if (villagerMemory == null) {
+                throw new IOException("Villager memory file is empty or invalid for UUID: " + uuid);
+            }
+            return villagerMemory;
+        }
     }
 
     public void updateVillager(@NotNull VillagerMemory villager) throws IOException {
         final var targetFile = getVillagerMemoryPath().resolve(villager.getId().toString() + ".json").toFile();
-        final var writer = new FileWriter(targetFile);
-        var gson = new GsonBuilder().setPrettyPrinting().create();
-        writer.write(gson.toJson(villager));
-        writer.close();
+        final var gson = new GsonBuilder().setPrettyPrinting().create();
+        try (final var writer = new FileWriter(targetFile, false)) {
+            writer.write(gson.toJson(villager));
+        }
     }
 
     public boolean isVillagerFileExists(@NotNull UUID uuid) {
@@ -219,23 +224,39 @@ public class ConfigManager {
 
     private void loadApiConfig() throws IOException {
         var gson = new Gson();
-        var reader = new FileReader(getApiConfigFilePath().toFile());
-        switch (config.getApiConfigPlatform()) {
-            case "openai-compatible" -> apiConfig = gson.fromJson(reader, OpenAICompatibleConfig.class);
-            case "cloudflare" -> apiConfig = gson.fromJson(reader, CloudflareAIWorkerConfig.class);
-            case "openai" -> apiConfig = gson.fromJson(reader, OpenAIConfig.class);
-            default -> throw new IllegalArgumentException("Invalid API config platform");
+        try (var reader = new FileReader(getApiConfigFilePath().toFile())) {
+            switch (config.getApiConfigPlatform()) {
+                case "openai-compatible" -> apiConfig = gson.fromJson(reader, OpenAICompatibleConfig.class);
+                case "cloudflare" -> apiConfig = gson.fromJson(reader, CloudflareAIWorkerConfig.class);
+                case "openai" -> apiConfig = gson.fromJson(reader, OpenAIConfig.class);
+                default -> throw new IllegalArgumentException("Invalid API config platform: " + config.getApiConfigPlatform());
+            }
+            
+            if (apiConfig == null) {
+                throw new IOException("API config file is empty or invalid");
+            }
         }
-
-        reader.close();
     }
 
     private void loadProfessionConfig() throws IOException {
         professionSpecificPrompts = new HashMap<>();
         var professionDir = getProfessionPath().toFile();
-        for (var file : Objects.requireNonNull(professionDir.listFiles(f -> f.getName().endsWith(".txt")))) {
-            var text = Files.readString(file.toPath());
-            professionSpecificPrompts.put(file.getName().replace(".txt", ""), text);
+        if (!professionDir.exists() || !professionDir.isDirectory()) {
+            Main.LOGGER.warn("Profession directory does not exist: {}", professionDir.getPath());
+            return;
+        }
+        
+        var professionFiles = professionDir.listFiles(f -> f.getName().endsWith(".txt"));
+        if (professionFiles == null || professionFiles.length == 0) {
+            Main.LOGGER.warn("No profession configuration files found in: {}", professionDir.getPath());
+            return;
+        }
+        
+        for (var file : professionFiles) {
+            if (file.isFile() && file.canRead()) {
+                var text = Files.readString(file.toPath());
+                professionSpecificPrompts.put(file.getName().replace(".txt", ""), text);
+            }
         }
     }
 }

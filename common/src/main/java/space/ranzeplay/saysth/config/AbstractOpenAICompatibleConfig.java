@@ -30,17 +30,23 @@ public abstract class AbstractOpenAICompatibleConfig implements IApiEndpointConf
                 .uri(URI.create(getChatCompletionEndpoint()))
                 .header("Content-Type", "application/json")
                 .header("Authorization", authCredentials)
+                .version(HttpClient.Version.HTTP_1_1)
                 .timeout(Duration.ofSeconds(Main.CONFIG_MANAGER.getConfig().getTimeoutSeconds()));
     }
 
     @Override
     public Optional<String> sendConversationAndGetResponseText(Conversation conversation) {
+        if (conversation == null || conversation.messages == null || conversation.messages.isEmpty()) {
+            Main.LOGGER.warn("Cannot send empty conversation");
+            return Optional.empty();
+        }
+        
         var gson = new Gson();
         var openAIConversation = new OpenAIConversation(modelName, conversation.messages);
         var conversationJson = gson.toJson(openAIConversation);
         Main.LOGGER.debug("Sending conversation to OpenAI-compatible endpoint: {}", conversationJson);
         var request = getPartialHttpRequest()
-                .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(conversationJson)))
+                .POST(HttpRequest.BodyPublishers.ofString(conversationJson))
                 .build();
 
 
@@ -50,6 +56,9 @@ public abstract class AbstractOpenAICompatibleConfig implements IApiEndpointConf
             Main.LOGGER.debug("Received response from OpenAI-compatible endpoint: [{}] {}", response.statusCode(), response.body());
         } catch (IOException | InterruptedException e) {
             Main.LOGGER.error("Failed to send conversation: {}", e.getMessage());
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt(); // Restore interrupted status
+            }
             return Optional.empty();
         }
 
@@ -58,17 +67,36 @@ public abstract class AbstractOpenAICompatibleConfig implements IApiEndpointConf
             return Optional.empty();
         }
 
-        var responseBody = gson.fromJson(response.body(), JsonObject.class);
-        return Optional.of(responseBody
-                .get("choices")
-                .getAsJsonArray()
-                .get(0)
-                .getAsJsonObject()
-                .get("message")
-                .getAsJsonObject()
-                .get("content")
-                .getAsString()
-        );
+        try {
+            var responseBody = gson.fromJson(response.body(), JsonObject.class);
+            if (responseBody == null || !responseBody.has("choices")) {
+                Main.LOGGER.error("Invalid response format: missing 'choices' field");
+                return Optional.empty();
+            }
+            
+            var choices = responseBody.get("choices").getAsJsonArray();
+            if (choices.isEmpty()) {
+                Main.LOGGER.error("Empty choices array in response");
+                return Optional.empty();
+            }
+            
+            var firstChoice = choices.get(0).getAsJsonObject();
+            if (!firstChoice.has("message")) {
+                Main.LOGGER.error("Invalid response format: missing 'message' field in choice");
+                return Optional.empty();
+            }
+            
+            var message = firstChoice.get("message").getAsJsonObject();
+            if (!message.has("content")) {
+                Main.LOGGER.error("Invalid response format: missing 'content' field in message");
+                return Optional.empty();
+            }
+            
+            return Optional.of(message.get("content").getAsString());
+        } catch (Exception e) {
+            Main.LOGGER.error("Failed to parse response: {}", e.getMessage());
+            return Optional.empty();
+        }
     }
 
     @AllArgsConstructor

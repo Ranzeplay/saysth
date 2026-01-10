@@ -17,6 +17,9 @@ public class Conversation {
     }
 
     public void addMessage(Message message) {
+        if (message == null) {
+            throw new IllegalArgumentException("Message cannot be null");
+        }
         messages.add(message);
     }
 }
