@@ -5,7 +5,8 @@ import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.SystemMessage;
 import dev.langchain4j.data.message.UserMessage;
-import dev.langchain4j.model.chat.ChatLanguageModel;
+import dev.langchain4j.model.chat.ChatModel;
+import dev.langchain4j.model.chat.response.ChatResponse;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.model.output.Response;
 import lombok.Data;
@@ -95,7 +96,7 @@ public class LangChain4jMCPConfig implements IApiEndpointConfig {
 
         try {
             // Build the chat model
-            ChatLanguageModel chatModel = createChatLanguageModel();
+            ChatModel chatModel = createChatLanguageModel();
             
             // Convert our messages to LangChain4j format
             List<ChatMessage> langChainMessages = convertMessages(conversation.messages);
@@ -120,14 +121,14 @@ public class LangChain4jMCPConfig implements IApiEndpointConfig {
             
             // Generate response
             Main.LOGGER.debug("LangChain4j MCP: Sending conversation to chat model");
-            Response<AiMessage> response = chatModel.generate(langChainMessages);
+            ChatResponse response = chatModel.chat(langChainMessages);
             
-            if (response == null || response.content() == null) {
+            if (response == null || response.aiMessage() == null) {
                 Main.LOGGER.error("LangChain4j MCP: Received null response from chat model");
                 return Optional.empty();
             }
             
-            String responseText = response.content().text();
+            String responseText = response.aiMessage().text();
             Main.LOGGER.debug("LangChain4j MCP: Received response ({} characters)", 
                     responseText != null ? responseText.length() : 0);
             
@@ -146,7 +147,7 @@ public class LangChain4jMCPConfig implements IApiEndpointConfig {
      * 
      * @return configured ChatLanguageModel instance
      */
-    private ChatLanguageModel createChatLanguageModel() {
+    private ChatModel createChatLanguageModel() {
         Main.LOGGER.debug("LangChain4j MCP: Building chat model with model='{}', baseUrl='{}'", 
                 modelName != null ? modelName : "gpt-3.5-turbo", 
                 baseUrl != null ? baseUrl : "default");
