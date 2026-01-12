@@ -33,6 +33,10 @@ subprojects {
     }
 
     dependencies {
+        // LangChain4j MCP support
+        implementation "dev.langchain4j:langchain4j:$rootProject.langchain4j_version"
+        implementation "dev.langchain4j:langchain4j-open-ai:$rootProject.langchain4j_version"
+
         minecraft "net.minecraft:minecraft:$rootProject.minecraft_version"
         mappings loom.officialMojangMappings()
     }
