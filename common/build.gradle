@@ -14,4 +14,9 @@ dependencies {
     annotationProcessor "org.projectlombok:lombok:$rootProject.lombok_version"
     testCompileOnly "org.projectlombok:lombok:$rootProject.lombok_version"
     testAnnotationProcessor "org.projectlombok:lombok:$rootProject.lombok_version"
+
+    // LangChain4j MCP support
+    implementation "dev.langchain4j:langchain4j:$rootProject.langchain4j_version"
+    implementation "dev.langchain4j:langchain4j-open-ai:$rootProject.langchain4j_version"
+    implementation "dev.langchain4j:langchain4j-mcp:$rootProject.langchain4j_version"
 }
