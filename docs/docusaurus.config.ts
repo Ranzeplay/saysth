@@ -83,6 +83,7 @@ const config: Config = {
           label: "Docs",
         },
         { to: "/blog", label: "Blog", position: "left" },
+        { to: "/tutorial", label: "Tutorial", position: "left" },
         {
           href: "https://github.com/Ranzeplay/saysth",
           label: "GitHub",
