@@ -24,10 +24,11 @@
 - `useExistingVillagerName`：如果可能，根据 `CustomName` 使用村民的现有名称。
 - `showTimeConsumption`：显示从发送到接收之间消耗的时间。
 - `timeoutSeconds`：每个 LLM 模型请求的时间限制。
-- `apiConfigPlatform`：LLM/AI 模型的平台。我们目前支持 3 种类型的平台。
+- `apiConfigPlatform`：LLM/AI 模型的平台。我们目前支持 4 种类型的平台。
   - `cloudflare`：Cloudflare AI worker。
   - `openai`：OpenAI。
   - `openai-compatible`：OpenAI 兼容接口。
+  - `langchain4j-mcp`：LangChain4j 与 MCP（模型上下文协议）支持。
 
 :::tip
 

@@ -24,10 +24,11 @@ Configuration in the `saysth/saysth-config.json`, you will see the content below
 - `useExistingVillagerName`: Use the existing name of a villager according to `CustomName` if possible.
 - `showTimeConsumption`: Show how much time consumed between sending to receiving.
 - `timeoutSconds`: Time time limit of each request to the LLM model.
-- `apiConfigPlatform`: The platform of the LLM/AI model. We currently support 3 types of platforms.
+- `apiConfigPlatform`: The platform of the LLM/AI model. We currently support 4 types of platforms.
   - `cloudflare`: Cloudflare AI worker.
   - `openai`: OpenAI.
   - `openai-compatible`: OpenAI-compatible interfaces.
+  - `langchain4j-mcp`: LangChain4j with MCP (Model Context Protocol) support.
 
 :::tip
 

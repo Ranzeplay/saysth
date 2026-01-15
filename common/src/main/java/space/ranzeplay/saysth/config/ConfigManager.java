@@ -229,6 +229,7 @@ public class ConfigManager {
                 case "openai-compatible" -> apiConfig = gson.fromJson(reader, OpenAICompatibleConfig.class);
                 case "cloudflare" -> apiConfig = gson.fromJson(reader, CloudflareAIWorkerConfig.class);
                 case "openai" -> apiConfig = gson.fromJson(reader, OpenAIConfig.class);
+                case "langchain4j-mcp" -> apiConfig = gson.fromJson(reader, LangChain4jMCPConfig.class);
                 default -> throw new IllegalArgumentException("Invalid API config platform: " + config.getApiConfigPlatform());
             }
             
