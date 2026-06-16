@@ -14,7 +14,7 @@ public class InstantDataProvider {
         if (villager == null || villager.level() == null) {
             return 0;
         }
-        return villager.level().getDayTime() % 24000; // Get the current time of the world
+        return villager.level().getOverworldClockTime() % 24000; // Get the current time of the world
     }
 
     public String getWorldTimeFormatted() {
