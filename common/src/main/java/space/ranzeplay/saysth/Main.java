@@ -5,7 +5,6 @@ import space.ranzeplay.saysth.config.ConfigManager;
 import space.ranzeplay.saysth.debug.ConsoleConversationHandler;
 import space.ranzeplay.saysth.villager.VillagerManager;
 
-import java.io.IOException;
 import java.nio.file.Path;
 
 public final class Main {
