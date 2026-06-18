@@ -14,7 +14,7 @@ import static space.ranzeplay.saysth.Main.MOD_ID;
 
 @Mod(MOD_ID)
 public final class MainNeoForge {
-    public static final Logger LOGGER = LoggerFactory.getLogger(Main.MOD_ID);;
+    public static final Logger LOGGER = LoggerFactory.getLogger(Main.MOD_ID);
 
     public MainNeoForge() {
         NeoForge.EVENT_BUS.register(new ChatListener());
