@@ -30,7 +30,7 @@ See wiki [here](https://saysth.ranzeplay.space).
 
 ## Versions
 
-- **1.2 (26.1)**
+- **1.2 (26.1, 26.2)**
 
 - 1.1.1 (1,21,1, 1,21,11)
 

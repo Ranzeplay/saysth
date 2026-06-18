@@ -29,7 +29,7 @@ Also you can checkout wiki indexed by DeepWiki [here](https://deepwiki.com/Ranze
 
 ## Versions
 
-- **1.2 (26.1)**
+- **1.2 (26.1, 26.2)**
 
 - 1.1.1 (1,21,1, 1,21,11)
 
