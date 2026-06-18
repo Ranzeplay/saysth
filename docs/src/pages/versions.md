@@ -2,7 +2,17 @@
 
 ## [vNext](/docs/next/intro)
 
-## [v1.1.1-f1](/docs/intro)
+## [v1.2](/docs/intro)
+
+| Game version / Mod loader | Fabric                                                                                              | NeoForge                                                                                              |
+|---------------------------|-----------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------|
+| 26.1                      | [Download](https://github.com/Ranzeplay/saysth/releases/download/v1.2/saysth-fabric-26.1-1.2.jar)   | [Download](https://github.com/Ranzeplay/saysth/releases/download/v1.2/saysth-neoforge-26.1-1.2.jar)   |
+
+Source: [Ranzeplay/saysth at v1.2](https://github.com/Ranzeplay/saysth/tree/v1.2)
+
+Release notes: [Release SaySomething v1.2](https://github.com/Ranzeplay/saysth/releases/tag/v1.2)
+
+## [v1.1.1-f1](/docs/1.1.1/intro)
 
 | Game version / Mod loader | Fabric                                                                                              | NeoForge                                                                                              |
 |---------------------------|-----------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------|
@@ -13,7 +23,7 @@ Source: [Ranzeplay/saysth at v1.1.1-f1](https://github.com/Ranzeplay/saysth/tree
 
 Release notes: [Release SaySomething v1.1.1-f1](https://github.com/Ranzeplay/saysth/releases/tag/v1.1.1-f1)
 
-## [v1.1.1](/docs/intro)
+## [v1.1.1](/docs/1.1.1/intro)
 
 | Game version / Mod loader | Fabric                                                                                              | NeoForge                                                                                              |
 |---------------------------|-----------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------|
