@@ -157,8 +157,8 @@ public class ConfigManager {
 
     public VillagerMemory getVillager(@NotNull UUID uuid) throws IOException {
         final var filePath = getVillagerMemoryPath().resolve(uuid + ".json").toFile();
-        if(!filePath.exists() && !filePath.createNewFile()) {
-            Main.LOGGER.warn("Failed to create memory for villager {}",  uuid);
+        if (!filePath.exists() && !filePath.createNewFile()) {
+            Main.LOGGER.warn("Failed to create memory for villager {}", uuid);
         }
 
         final var gson = new Gson();
@@ -198,9 +198,10 @@ public class ConfigManager {
                 case "openai-compatible" -> apiConfig = gson.fromJson(reader, OpenAICompatibleConfig.class);
                 case "cloudflare" -> apiConfig = gson.fromJson(reader, CloudflareAIWorkerConfig.class);
                 case "openai" -> apiConfig = gson.fromJson(reader, OpenAIConfig.class);
-                default -> throw new IllegalArgumentException("Invalid API config platform: " + config.getApiConfigPlatform());
+                default ->
+                        throw new IllegalArgumentException("Invalid API config platform: " + config.getApiConfigPlatform());
             }
-            
+
             if (apiConfig == null) {
                 throw new IOException("API config file is empty or invalid");
             }
@@ -214,13 +215,13 @@ public class ConfigManager {
             Main.LOGGER.warn("Profession directory does not exist: {}", professionDir.getPath());
             return;
         }
-        
+
         var professionFiles = professionDir.listFiles(f -> f.getName().endsWith(".txt"));
         if (professionFiles == null || professionFiles.length == 0) {
             Main.LOGGER.warn("No profession configuration files found in: {}", professionDir.getPath());
             return;
         }
-        
+
         for (var file : professionFiles) {
             if (file.isFile() && file.canRead()) {
                 var text = Files.readString(file.toPath());
