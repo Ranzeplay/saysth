@@ -5,19 +5,22 @@ import com.google.gson.GsonBuilder;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import space.ranzeplay.saysth.Main;
+import space.ranzeplay.saysth.villager.ProfessionExtractor;
 import space.ranzeplay.saysth.villager.VillagerMemory;
 
-import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.URISyntaxException;
+import java.io.InputStream;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
-import java.util.Objects;
 import java.util.UUID;
-import java.util.jar.JarFile;
+import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 public class ConfigManager {
     private final Path configDirectoryPath;
@@ -56,7 +59,7 @@ public class ConfigManager {
         return configDirectoryPath.resolve("api-config.json");
     }
 
-    public void createConfigIfNotExists() throws IOException, URISyntaxException {
+    public void createConfigIfNotExists(ProfessionExtractor professionExtractor) throws IOException {
         if (!configDirectoryPath.toFile().exists()) {
             Main.LOGGER.info("Creating config directory");
             if (configDirectoryPath.toFile().mkdirs()) {
@@ -110,41 +113,7 @@ public class ConfigManager {
                 Main.LOGGER.error("Failed to create profession directory");
             }
         }
-        var professions = getClass().getResource("/assets/professions");
-        assert professions != null;
-        var path = getClass().getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
-        // remove content after last .jar if any
-        if (path.contains(".jar")) {
-            path = path.substring(0, path.lastIndexOf(".jar") + 4);
-        }
-
-        try (var jarFile = new JarFile(new File(path))) {
-            if (jarFile.getManifest() == null) {
-                throw new IOException("Jar file does not contain a manifest");
-            }
-
-            var entries = jarFile.entries();
-            while (entries.hasMoreElements()) {
-                var entry = entries.nextElement();
-                if (entry.getName().startsWith("assets/professions/") && entry.getName().endsWith(".txt")) {
-                    var targetPath = getProfessionPath().resolve(entry.getName().substring("assets/professions/".length())).normalize();
-                    if (!targetPath.startsWith(getProfessionPath())) {
-                        Main.LOGGER.warn("Skipping invalid entry: {}", entry.getName());
-                        continue;
-                    }
-                    var targetFile = targetPath.toFile();
-                    if (!targetFile.exists()) {
-                        var stream = getClass().getResourceAsStream("/" + entry.getName());
-                        assert stream != null;
-                        Files.copy(stream, targetPath);
-                        stream.close();
-                    }
-                }
-            }
-        } catch (IOException e) {
-            Main.LOGGER.error("Failed to open jar file: {}", e.getMessage());
-        }
-
+        exportProfessions();
 
         if (!getVillagerMemoryPath().toFile().exists()) {
             Main.LOGGER.info("Creating villager memory directory");
@@ -258,5 +227,88 @@ public class ConfigManager {
                 professionSpecificPrompts.put(file.getName().replace(".txt", ""), text);
             }
         }
+    }
+
+    public void exportProfessions() {
+        int count = 0;
+
+        // Do not include leading slash for ZIP entry matching
+        String resourceDirectory = "assets/professions";
+        Path targetDir = getProfessionPath();
+
+        try {
+            // Dynamically locate the JAR file or class folder of this mod
+            URL codeSource = ConfigManager.class.getProtectionDomain().getCodeSource().getLocation();
+            if (codeSource == null) return;
+
+            boolean isDirectory = false;
+            Path idePath = null;
+
+            // Step 1: Detect if we are running from raw classes (IDE Mode)
+            if ("file".equals(codeSource.getProtocol())) {
+                Path p = Path.of(codeSource.toURI());
+                if (Files.isDirectory(p)) {
+                    isDirectory = true;
+                    idePath = p.resolve(resourceDirectory);
+                }
+            }
+
+            if (isDirectory) {
+                // --- IDE Mode ---
+                if (!Files.exists(idePath)) return;
+                try (Stream<Path> walk = Files.walk(idePath)) {
+                    Path finalIdePath = idePath;
+                    walk.filter(Files::isRegularFile)
+                            .filter(p -> p.toString().endsWith(".txt"))
+                            .forEach(sourcePath -> {
+                                try {
+                                    Path relative = finalIdePath.relativize(sourcePath);
+                                    Path target = targetDir.resolve(relative.toString()).normalize();
+                                    if (target.startsWith(targetDir) && !Files.exists(target)) {
+                                        Files.createDirectories(target.getParent());
+                                        Files.copy(sourcePath, target);
+                                    }
+                                } catch (IOException e) {
+                                    // Handle per-file logging here
+                                }
+                            });
+                }
+            } else {
+                // --- Production Mode (Standalone JAR & Fabric Nested JiJ) ---
+                // codeSource.openStream() reads the raw byte content of the container jar.
+                // If nested, Java's URL handlers unpack the sub-jar bytes seamlessly into this stream.
+                try (InputStream urlStream = codeSource.openStream();
+                     ZipInputStream zipStream = new ZipInputStream(urlStream)) {
+
+                    ZipEntry entry;
+                    while ((entry = zipStream.getNextEntry()) != null) {
+                        String entryName = entry.getName();
+
+                        // "Browse" the directory by filtering entries that match the path criteria
+                        if (entryName.startsWith(resourceDirectory + "/") && entryName.endsWith(".txt")) {
+
+                            // Extract relative path inside assets folder
+                            String relativePathStr = entryName.substring(resourceDirectory.length() + 1);
+                            Path targetPath = targetDir.resolve(relativePathStr).normalize();
+
+                            if (!Files.exists(targetPath)) {
+                                Files.createDirectories(targetPath.getParent());
+
+                                // Files.copy streams bytes until the current ZipEntry's EOF,
+                                // automatically leaving the underlying zipStream open for the next loop.
+                                Files.copy(zipStream, targetPath, StandardCopyOption.REPLACE_EXISTING);
+                                count++;
+                            }
+                        }
+
+                        zipStream.closeEntry();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            Main.LOGGER.warn("Failed to export professions from {}", resourceDirectory, e);
+        }
+
+        Main.LOGGER.info("Exported {} professions", count);
     }
 }

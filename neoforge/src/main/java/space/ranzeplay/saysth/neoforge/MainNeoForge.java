@@ -23,7 +23,7 @@ public final class MainNeoForge {
         final var configDir = FMLPaths.CONFIGDIR.get();
 
         // Run our common setup.
-        Main.init(configDir, LOGGER);
+        Main.init(configDir, new NeoForgeProfessionExtractor(), LOGGER);
         
         // Initialize console debug handler
         ConsoleDebugCommands.initialize();

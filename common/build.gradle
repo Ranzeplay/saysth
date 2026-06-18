@@ -18,11 +18,11 @@ dependencies {
     compileOnly group: 'io.github.llamalad7', name: 'mixinextras-common', version: '0.3.5'
     annotationProcessor group: 'io.github.llamalad7', name: 'mixinextras-common', version: '0.3.5'
 
-    compileOnly("org.projectlombok:lombok:1.18.46")
-    annotationProcessor("org.projectlombok:lombok:1.18.46")
+    compileOnly("org.projectlombok:lombok:$rootProject.lombok_version")
+    annotationProcessor("org.projectlombok:lombok:$rootProject.lombok_version")
 
-    testCompileOnly("org.projectlombok:lombok:1.18.46")
-    testAnnotationProcessor("org.projectlombok:lombok:1.18.46")
+    testCompileOnly("org.projectlombok:lombok:$rootProject.lombok_version")
+    testAnnotationProcessor("org.projectlombok:lombok:$rootProject.lombok_version")
 }
 
 configurations {
