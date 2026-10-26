@@ -7,7 +7,8 @@
 | Game version / Mod loader | Fabric                                                                                              | NeoForge                                                                                              |
 |---------------------------|-----------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------|
 | 26.1                      | [Download](https://github.com/Ranzeplay/saysth/releases/download/v1.2/saysth-fabric-26.1-1.2.jar)   | [Download](https://github.com/Ranzeplay/saysth/releases/download/v1.2/saysth-neoforge-26.1-1.2.jar)   |
-| 26.2                      | [Download](https://github.com/Ranzeplay/saysth/releases/download/v1.2/saysth-fabric-26.2-1.2.jar)   | [Download](https://github.com/Ranzeplay/saysth/releases/download/v1.2/saysth-neoforge-26.2-1.2.jar)   |
+| 26.3 | [Download](https://github.com/Ranzeplay/saysth/releases/download/v1.2/saysth-fabric-26.3-1.2.jar) | [Download](https://github.com/Ranzeplay/saysth/releases/download/v1.2/saysth-neoforge-26.3-1.2.jar) |
+| 26.2 | [Download](https://github.com/Ranzeplay/saysth/releases/download/v1.2/saysth-fabric-26.2-1.2.jar) | [Download](https://github.com/Ranzeplay/saysth/releases/download/v1.2/saysth-neoforge-26.2-1.2.jar) |
 
 Source: [Ranzeplay/saysth at v1.2](https://github.com/Ranzeplay/saysth/tree/v1.2)
 
