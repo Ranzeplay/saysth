@@ -6,6 +6,9 @@ import lombok.AllArgsConstructor;
 import space.ranzeplay.saysth.Main;
 import space.ranzeplay.saysth.chat.Conversation;
 import space.ranzeplay.saysth.chat.Message;
+import space.ranzeplay.saysth.chat.Tool;
+import space.ranzeplay.saysth.chat.ToolCall;
+import space.ranzeplay.saysth.chat.ToolResponse;
 
 import java.io.IOException;
 import java.net.URI;
@@ -14,7 +17,9 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public abstract class AbstractOpenAICompatibleConfig implements IApiEndpointConfig {
     String authCredentials;
@@ -36,13 +41,24 @@ public abstract class AbstractOpenAICompatibleConfig implements IApiEndpointConf
 
     @Override
     public Optional<String> sendConversationAndGetResponseText(Conversation conversation) {
+        return sendConversation(conversation, List.of())
+                .filter(response -> !response.hasToolCalls())
+                .map(ToolResponse::content);
+    }
+
+    @Override
+    public Optional<ToolResponse> sendConversation(Conversation conversation, List<Tool> tools) {
         if (conversation == null || conversation.messages == null || conversation.messages.isEmpty()) {
             Main.LOGGER.warn("Cannot send empty conversation");
             return Optional.empty();
         }
         
         var gson = new Gson();
-        var openAIConversation = new OpenAIConversation(modelName, conversation.messages);
+        var toolDefinitions = tools == null ? List.<ToolDefinition>of() : tools.stream()
+                .map(tool -> new ToolDefinition("function",
+                        new FunctionDefinition(tool.getName(), tool.getDescription(), tool.getParameters())))
+                .collect(Collectors.toList());
+        var openAIConversation = new OpenAIConversation(modelName, conversation.messages, toolDefinitions);
         var conversationJson = gson.toJson(openAIConversation);
         Main.LOGGER.debug("Sending conversation to OpenAI-compatible endpoint: {}", conversationJson);
         var request = getPartialHttpRequest()
@@ -87,23 +103,51 @@ public abstract class AbstractOpenAICompatibleConfig implements IApiEndpointConf
             }
             
             var message = firstChoice.get("message").getAsJsonObject();
-            if (!message.has("content")) {
-                Main.LOGGER.error("Invalid response format: missing 'content' field in message");
+            var toolCalls = new ArrayList<ToolCall>();
+            if (message.has("tool_calls") && !message.get("tool_calls").isJsonNull()) {
+                for (var toolCall : message.getAsJsonArray("tool_calls")) {
+                    toolCalls.add(ToolCall.fromJson(toolCall.getAsJsonObject()));
+                }
+            }
+            var content = message.has("content") && !message.get("content").isJsonNull()
+                    ? message.get("content").getAsString()
+                    : null;
+            if (content == null && toolCalls.isEmpty()) {
+                Main.LOGGER.error("Invalid response format: message has neither content nor tool calls");
                 return Optional.empty();
             }
-            
-            return Optional.of(message.get("content").getAsString());
+            return Optional.of(new ToolResponse(content, toolCalls));
         } catch (Exception e) {
             Main.LOGGER.error("Failed to parse response: {}", e.getMessage());
             return Optional.empty();
         }
     }
 
-    @AllArgsConstructor
     static class OpenAIConversation {
         @SuppressWarnings("unused")
         String model;
         @SuppressWarnings("unused")
         ArrayList<Message> messages;
+        @SuppressWarnings("unused")
+        List<ToolDefinition> tools;
+
+        OpenAIConversation(String model, ArrayList<Message> messages, List<ToolDefinition> tools) {
+            this.model = model;
+            this.messages = messages;
+            this.tools = tools;
+        }
+    }
+
+    @AllArgsConstructor
+    static class ToolDefinition {
+        String type;
+        FunctionDefinition function;
+    }
+
+    @AllArgsConstructor
+    static class FunctionDefinition {
+        String name;
+        String description;
+        JsonObject parameters;
     }
 }

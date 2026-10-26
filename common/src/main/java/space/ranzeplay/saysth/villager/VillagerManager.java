@@ -7,11 +7,30 @@ import space.ranzeplay.saysth.Main;
 import space.ranzeplay.saysth.chat.ChatRole;
 import space.ranzeplay.saysth.chat.Conversation;
 import space.ranzeplay.saysth.chat.Message;
+import space.ranzeplay.saysth.chat.Tool;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class VillagerManager {
+    private static final int MAX_TOOL_CALL_ROUNDS = 5;
+    private final List<VillagerSystemPromptHook> systemPromptHooks = new CopyOnWriteArrayList<>();
+
+    public void addSystemPromptHook(VillagerSystemPromptHook hook) {
+        if (hook == null) {
+            throw new IllegalArgumentException("System prompt hook cannot be null");
+        }
+        systemPromptHooks.add(hook);
+    }
+
+    public void removeSystemPromptHook(VillagerSystemPromptHook hook) {
+        if (hook == null) {
+            throw new IllegalArgumentException("System prompt hook cannot be null");
+        }
+        systemPromptHooks.remove(hook);
+    }
+
     private static VillagerMemory generateRandomVillagerMemory(Villager villager) {
         if (villager == null) {
             throw new IllegalArgumentException("Villager cannot be null");
@@ -84,9 +103,8 @@ public class VillagerManager {
 
         Main.LOGGER.debug("Conversation with villager (before post) {}: {}", villager.getUUID(), conversation);
 
-        int systemMessagesAdded = addSystemMessagesToConversation(conversation, villager, memory);
-        final var response = Main.CONFIG_MANAGER.getApiConfig().sendConversationAndGetResponseText(conversation);
-        response.ifPresent(m -> conversation.addMessage(new Message(ChatRole.ASSISTANT, m)));
+        int systemMessagesAdded = addSystemMessagesToConversation(conversation, villager, player, memory);
+        final var response = sendConversationWithTools(conversation, createVillagerTools(villager, player));
 
         removeSystemMessages(conversation, systemMessagesAdded);
         Main.LOGGER.debug("Conversation with villager (after post) {}: {}", villager.getUUID(), conversation);
@@ -98,6 +116,52 @@ public class VillagerManager {
         return response;
     }
 
+    private List<Tool> createVillagerTools(Villager villager, Player player) {
+        var tools = new ArrayList<Tool>();
+        tools.add(new VillagerProfessionTool(villager));
+        for (var property : VillagerPropertyTool.Property.values()) {
+            tools.add(new VillagerPropertyTool(property, villager, player));
+        }
+        return tools;
+    }
+
+    private Optional<String> sendConversationWithTools(Conversation conversation, List<Tool> tools) {
+        for (int round = 0; round < MAX_TOOL_CALL_ROUNDS; round++) {
+            final var response = Main.CONFIG_MANAGER.getApiConfig().sendConversation(conversation, tools);
+            if (response.isEmpty()) {
+                return Optional.empty();
+            }
+
+            final var toolResponse = response.get();
+            if (!toolResponse.hasToolCalls()) {
+                if (toolResponse.content() == null) {
+                    Main.LOGGER.error("API returned an empty assistant response");
+                    return Optional.empty();
+                }
+                conversation.addMessage(new Message(ChatRole.ASSISTANT, toolResponse.content()));
+                return Optional.of(toolResponse.content());
+            }
+
+            conversation.addMessage(Message.assistantToolCalls(toolResponse.toolCalls()));
+            for (var toolCall : toolResponse.toolCalls()) {
+                var tool = tools.stream()
+                        .filter(candidate -> candidate.getName().equals(toolCall.name()))
+                        .findFirst()
+                        .orElse(null);
+                if (tool == null) {
+                    Main.LOGGER.error("Model requested unknown tool: {}", toolCall.name());
+                    conversation.addMessage(Message.toolResult(toolCall,
+                            "Error: unknown tool '" + toolCall.name() + "'."));
+                    continue;
+                }
+                conversation.addMessage(Message.toolResult(toolCall, tool.execute(toolCall.arguments())));
+            }
+        }
+
+        Main.LOGGER.error("Tool-call limit exceeded after {} rounds", MAX_TOOL_CALL_ROUNDS);
+        return Optional.empty();
+    }
+
     private VillagerMemory getOrCreateVillagerMemory(Villager villager, Player player) throws IOException {
         var memory = Main.CONFIG_MANAGER.getVillager(villager.getUUID());
         if (!memory.conversations.containsKey(player.getUUID())) {
@@ -106,16 +170,23 @@ public class VillagerManager {
         return memory;
     }
 
-    private int addSystemMessagesToConversation(Conversation conversation, Villager villager, VillagerMemory memory) {
-        // Push system messages including villager's trades and character description
-        // Order: character (first), profession-specific prompt (optional), trades
-        conversation.messages.addFirst(new Message(ChatRole.SYSTEM, formatVillagerTrades(villager)));
-        int systemMessagesAdded = 1;
+    private int addSystemMessagesToConversation(
+            Conversation conversation, Villager villager, Player player, VillagerMemory memory) {
+        // Push system messages including injected context, profession-specific prompt and character description.
+        int systemMessagesAdded = 0;
 
         String professionPrompt = getProfessionSpecificPrompt(villager);
         if (professionPrompt != null && !professionPrompt.isBlank()) {
             conversation.messages.addFirst(new Message(ChatRole.SYSTEM, professionPrompt));
             systemMessagesAdded++;
+        }
+
+        for (var hook : systemPromptHooks) {
+            var prompt = hook.getAdditionalSystemPrompt(villager, player, memory);
+            if (prompt.isPresent() && !prompt.get().isBlank()) {
+                conversation.messages.addFirst(new Message(ChatRole.SYSTEM, prompt.get()));
+                systemMessagesAdded++;
+            }
         }
 
         conversation.messages.addFirst(new Message(ChatRole.SYSTEM, memory.getCharacter()));
@@ -182,46 +253,4 @@ public class VillagerManager {
         return villager;
     }
 
-    public String formatVillagerTrades(Villager villager) {
-        if (villager == null) {
-            return "You don't have any information about trades.";
-        }
-        
-        var trades = villager.getOffers();
-        if (trades == null || trades.isEmpty()) {
-            return "You don't sell anything for now.";
-        }
-
-        var formattedTrades = new ArrayList<String>();
-        formattedTrades.add("You ONLY have the following trades:");
-
-        for (var trade : trades) {
-            if (trade == null || trade.getCostA() == null || trade.getResult() == null) {
-                Main.LOGGER.warn("Encountered null or incomplete trade, skipping");
-                continue;
-            }
-            
-            StringBuilder formattedTrade = new StringBuilder();
-
-            formattedTrade.append("- ")
-                    .append(trade.getCostA().getCount())
-                    .append("x ")
-                    .append(trade.getCostA().getHoverName().getString().toLowerCase());
-
-            if (trade.getCostB() != null && !trade.getCostB().isEmpty()) {
-                formattedTrade.append(" and ")
-                        .append(trade.getCostB().getCount())
-                        .append("x ")
-                        .append(trade.getCostB().getHoverName().getString().toLowerCase());
-            }
-
-            formattedTrade.append(" for ")
-                    .append(trade.getResult().getCount())
-                    .append("x ")
-                    .append(trade.getResult().getHoverName().getString().toLowerCase());
-
-            formattedTrades.add(formattedTrade.toString());
-        }
-        return String.join("\n", formattedTrades);
-    }
 }

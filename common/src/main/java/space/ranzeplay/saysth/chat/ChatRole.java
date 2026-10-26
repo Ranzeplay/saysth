@@ -3,7 +3,8 @@ package space.ranzeplay.saysth.chat;
 public enum ChatRole {
     SYSTEM("system"),
     USER("user"),
-    ASSISTANT("assistant");
+    ASSISTANT("assistant"),
+    TOOL("tool");
 
     private final String name;
 

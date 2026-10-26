@@ -5,6 +5,9 @@ import com.google.gson.JsonObject;
 import lombok.Data;
 import space.ranzeplay.saysth.Main;
 import space.ranzeplay.saysth.chat.Conversation;
+import space.ranzeplay.saysth.chat.Tool;
+import space.ranzeplay.saysth.chat.ToolCall;
+import space.ranzeplay.saysth.chat.ToolResponse;
 
 import java.io.IOException;
 import java.net.URI;
@@ -13,6 +16,8 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.Optional;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 public class CloudflareAIWorkerConfig implements IApiEndpointConfig {
@@ -31,6 +36,13 @@ public class CloudflareAIWorkerConfig implements IApiEndpointConfig {
 
     @Override
     public Optional<String> sendConversationAndGetResponseText(Conversation conversation) {
+        return sendConversation(conversation, List.of())
+                .filter(response -> !response.hasToolCalls())
+                .map(ToolResponse::content);
+    }
+
+    @Override
+    public Optional<ToolResponse> sendConversation(Conversation conversation, List<Tool> tools) {
         if (conversation == null || conversation.messages == null || conversation.messages.isEmpty()) {
             Main.LOGGER.warn("Cannot send empty conversation");
             return Optional.empty();
@@ -38,7 +50,14 @@ public class CloudflareAIWorkerConfig implements IApiEndpointConfig {
         
         Main.LOGGER.debug("Using Cloudflare AI Worker model: {}", modelName);
         var gson = new Gson();
-        var conversationJson = gson.toJson(conversation);
+        var toolDefinitions = tools == null ? List.<AbstractOpenAICompatibleConfig.ToolDefinition>of() : tools.stream()
+                .map(tool -> new AbstractOpenAICompatibleConfig.ToolDefinition("function",
+                        new AbstractOpenAICompatibleConfig.FunctionDefinition(
+                                tool.getName(), tool.getDescription(), tool.getParameters())))
+                .toList();
+        var requestBody = new AbstractOpenAICompatibleConfig.OpenAIConversation(
+                modelName, conversation.messages, toolDefinitions);
+        var conversationJson = gson.toJson(requestBody);
         Main.LOGGER.debug("Sending conversation to Cloudflare AI Worker: {}", conversationJson);
         var request = getPartialHttpRequest()
                 .POST(HttpRequest.BodyPublishers.ofString(conversationJson))
@@ -69,12 +88,20 @@ public class CloudflareAIWorkerConfig implements IApiEndpointConfig {
             }
             
             var result = responseBody.get("result").getAsJsonObject();
-            if (!result.has("response")) {
-                Main.LOGGER.error("Invalid response format: missing 'response' field in result");
+            var toolCalls = new ArrayList<ToolCall>();
+            if (result.has("tool_calls") && !result.get("tool_calls").isJsonNull()) {
+                for (var toolCall : result.getAsJsonArray("tool_calls")) {
+                    toolCalls.add(ToolCall.fromJson(toolCall.getAsJsonObject()));
+                }
+            }
+            var content = result.has("response") && !result.get("response").isJsonNull()
+                    ? result.get("response").getAsString()
+                    : null;
+            if (content == null && toolCalls.isEmpty()) {
+                Main.LOGGER.error("Invalid response format: result has neither response nor tool calls");
                 return Optional.empty();
             }
-            
-            return Optional.of(result.get("response").getAsString());
+            return Optional.of(new ToolResponse(content, toolCalls));
         } catch (Exception e) {
             Main.LOGGER.error("Failed to parse Cloudflare response: {}", e.getMessage());
             return Optional.empty();
